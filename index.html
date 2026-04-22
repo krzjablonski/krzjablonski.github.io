@@ -1,0 +1,1503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Krzysztof Jabłoński — Full-stack engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0b;
+        --bg-elev: #0f0f11;
+        --ink: #ececee;
+        --dim: rgba(236, 236, 238, 0.58);
+        --faint: rgba(236, 236, 238, 0.14);
+        --fainter: rgba(236, 236, 238, 0.06);
+        --accent: #00ff9c; /* green default */
+        --accent-dim: color-mix(in oklch, var(--accent) 25%, transparent);
+        --grid-op: 0.05;
+        --sans: "Inter", system-ui, -apple-system, Segoe UI, sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        --maxw: 1200px;
+        --pad-x: clamp(24px, 5vw, 80px);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      body {
+        overflow-x: hidden;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      ::selection {
+        background: var(--accent);
+        color: #000;
+      }
+
+      /* ─── ambient layers ───────────────────────── */
+      .bg-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .bg-grid {
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(236, 236, 238, var(--grid-op)) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(236, 236, 238, var(--grid-op)) 1px,
+            transparent 1px
+          );
+        background-size: 64px 64px;
+        mask-image: radial-gradient(
+          ellipse at 50% 0%,
+          rgba(0, 0, 0, 0.9),
+          transparent 80%
+        );
+      }
+      .bg-scan {
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent 0 2px,
+          rgba(255, 255, 255, 0.02) 2px 3px
+        );
+      }
+      .bg-noise {
+        opacity: 0.035;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' seed='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      .bg-glow {
+        background:
+          radial-gradient(
+            ellipse 800px 500px at 80% -10%,
+            var(--accent-dim),
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 600px 400px at -10% 30%,
+            color-mix(in oklch, var(--accent) 12%, transparent),
+            transparent 70%
+          );
+        opacity: 0.55;
+      }
+
+      main,
+      header,
+      footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* ─── NAV ─────────────────────────────────── */
+      header.nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px var(--pad-x);
+        backdrop-filter: blur(10px);
+        background: color-mix(in oklch, var(--bg) 70%, transparent);
+        border-bottom: 1px solid var(--faint);
+      }
+      .brand {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+      }
+      .brand b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .brand .dot {
+        color: var(--accent);
+      }
+      nav.links {
+        display: flex;
+        gap: 28px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+      }
+      nav.links a {
+        position: relative;
+        padding: 4px 0;
+        transition: color 0.2s;
+      }
+      nav.links a:hover {
+        color: var(--ink);
+      }
+      nav.links a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 100%;
+        bottom: -2px;
+        height: 1px;
+        background: var(--accent);
+        transition: right 0.25s ease;
+      }
+      nav.links a:hover::after {
+        right: 0;
+      }
+      .nav-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        color: var(--dim);
+      }
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 0 var(--accent);
+        animation: pulse 2.2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0
+            color-mix(in oklch, var(--accent) 60%, transparent);
+        }
+        70% {
+          box-shadow: 0 0 0 10px transparent;
+        }
+        100% {
+          box-shadow: 0 0 0 0 transparent;
+        }
+      }
+      @media (max-width: 720px) {
+        nav.links {
+          display: none;
+        }
+      }
+
+      /* ─── container ───────────────────────────── */
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 var(--pad-x);
+      }
+
+      /* ─── HERO ────────────────────────────────── */
+      section.hero {
+        padding: clamp(72px, 12vh, 140px) 0 clamp(80px, 14vh, 160px);
+        position: relative;
+      }
+      .hero .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        text-transform: uppercase;
+        background: color-mix(in oklch, var(--accent) 6%, transparent);
+      }
+      .hero .pill .status-dot {
+        background: var(--accent);
+      }
+
+      .hero h1 {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: clamp(48px, 11vw, 148px);
+        line-height: 0.9;
+        letter-spacing: -0.045em;
+        margin: 28px 0 0;
+        color: var(--ink);
+      }
+      .hero h1 .caret {
+        color: var(--accent);
+        font-weight: 500;
+      }
+
+      .glitch {
+        position: relative;
+        display: inline-block;
+      }
+      .glitch > span {
+        display: block;
+      }
+      .glitch::before,
+      .glitch::after {
+        content: attr(data-text);
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+      .glitch::before {
+        color: var(--accent);
+        transform: translate(-2px, 0);
+        clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+        animation: glitchA 3.6s infinite steps(1);
+      }
+      .glitch::after {
+        color: #ff3ea5;
+        transform: translate(2px, 0);
+        clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+        animation: glitchB 3.6s infinite steps(1);
+      }
+      @keyframes glitchA {
+        0%,
+        93%,
+        100% {
+          transform: translate(-2px, 0);
+          opacity: 0;
+        }
+        94% {
+          transform: translate(-4px, 0);
+          opacity: 0.7;
+        }
+        95% {
+          transform: translate(1px, 1px);
+          opacity: 0.9;
+        }
+        96% {
+          transform: translate(-3px, -1px);
+          opacity: 0.4;
+        }
+        97% {
+          transform: translate(-2px, 0);
+          opacity: 0;
+        }
+      }
+      @keyframes glitchB {
+        0%,
+        93%,
+        100% {
+          transform: translate(2px, 0);
+          opacity: 0;
+        }
+        94% {
+          transform: translate(4px, 1px);
+          opacity: 0.6;
+        }
+        95% {
+          transform: translate(-1px, -1px);
+          opacity: 0.8;
+        }
+        96% {
+          transform: translate(3px, 1px);
+          opacity: 0.4;
+        }
+        97% {
+          transform: translate(2px, 0);
+          opacity: 0;
+        }
+      }
+
+      .hero .tagline {
+        margin-top: 32px;
+        max-width: 620px;
+        font-size: clamp(16px, 1.6vw, 20px);
+        line-height: 1.5;
+        color: var(--dim);
+      }
+      .hero .tagline b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      .hero .cta {
+        display: flex;
+        gap: 12px;
+        margin-top: 40px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 22px;
+        border: 1px solid var(--faint);
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          background 0.2s,
+          color 0.2s,
+          transform 0.1s;
+      }
+      .btn:hover {
+        border-color: var(--ink);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn.primary {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .btn.primary:hover {
+        background: var(--accent);
+        color: #000;
+      }
+      .btn .arrow {
+        transition: transform 0.2s;
+      }
+      .btn:hover .arrow {
+        transform: translateX(3px);
+      }
+
+      .hero-meta {
+        position: absolute;
+        top: 24px;
+        right: var(--pad-x);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-align: right;
+        line-height: 1.9;
+      }
+      @media (max-width: 720px) {
+        .hero-meta {
+          display: none;
+        }
+      }
+
+      /* ─── section chrome ──────────────────────── */
+      section {
+        position: relative;
+      }
+      .sec {
+        padding: clamp(64px, 10vh, 120px) 0;
+        border-top: 1px solid var(--faint);
+      }
+      .sec-head {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 40px;
+        margin-bottom: 48px;
+      }
+      .sec-num {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--accent);
+        padding-top: 8px;
+      }
+      .sec-num span {
+        color: var(--dim);
+        display: block;
+        margin-top: 4px;
+      }
+      .sec-title {
+        font-size: clamp(24px, 3vw, 36px);
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        line-height: 1.15;
+        max-width: 760px;
+      }
+      .sec-title em {
+        font-style: normal;
+        color: var(--accent);
+      }
+
+      .sec-body {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 40px;
+      }
+      @media (max-width: 760px) {
+        .sec-head,
+        .sec-body {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+      }
+
+      /* ─── ABOUT ─────────────────────────────── */
+      .about p {
+        font-size: clamp(15px, 1.3vw, 17px);
+        line-height: 1.65;
+        color: var(--dim);
+        max-width: 680px;
+        text-wrap: pretty;
+      }
+      .about p + p {
+        margin-top: 18px;
+      }
+      .about p b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      .about-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        margin-top: 48px;
+        border-top: 1px solid var(--faint);
+        border-bottom: 1px solid var(--faint);
+      }
+      .about-stat {
+        padding: 24px 0;
+        border-right: 1px solid var(--faint);
+      }
+      .about-stat:last-child {
+        border-right: none;
+      }
+      .about-stat .n {
+        font-family: var(--mono);
+        font-weight: 600;
+        font-size: clamp(28px, 3.5vw, 40px);
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+      .about-stat .n .u {
+        color: var(--accent);
+      }
+      .about-stat .l {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+        margin-top: 6px;
+      }
+      @media (max-width: 640px) {
+        .about-stats {
+          grid-template-columns: 1fr;
+        }
+        .about-stat {
+          border-right: none;
+          border-bottom: 1px solid var(--faint);
+        }
+        .about-stat:last-child {
+          border-bottom: none;
+        }
+      }
+
+      /* ─── TERMINAL skills ──────────────────────── */
+      .term {
+        margin-top: 40px;
+        background: var(--bg-elev);
+        border: 1px solid var(--faint);
+        border-radius: 4px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.9;
+        overflow: hidden;
+        box-shadow: 0 10px 60px rgba(0, 0, 0, 0.5);
+      }
+      .term-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--faint);
+        background: rgba(255, 255, 255, 0.015);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+      }
+      .term-bar .dots {
+        display: flex;
+        gap: 6px;
+      }
+      .term-bar .dots i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--faint);
+        display: inline-block;
+      }
+      .term-bar .dots i.on {
+        background: var(--accent);
+      }
+      .term-body {
+        padding: 22px 24px;
+      }
+      .term-prompt {
+        color: var(--dim);
+      }
+      .term-prompt .u {
+        color: var(--accent);
+      }
+      .term-row {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .term-row > .k {
+        color: var(--accent);
+      }
+      .term-row > .v {
+        color: var(--ink);
+      }
+      .term-row > .v i {
+        font-style: normal;
+        color: var(--dim);
+      }
+      .caret {
+        color: var(--accent);
+        animation: blink 1.05s steps(2) infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ─── PROJECTS ─────────────────────────── */
+      .proj-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .proj {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        grid-template-areas: "num tag stack" "num main main";
+        column-gap: 20px;
+        row-gap: 10px;
+        align-items: start;
+        padding: 28px 0;
+        border-bottom: 1px solid var(--faint);
+        transition: padding 0.25s ease;
+        position: relative;
+      }
+      .proj-num {
+        grid-area: num;
+        padding-top: 4px;
+      }
+      .proj-tag {
+        grid-area: tag;
+        align-self: center;
+        white-space: nowrap;
+      }
+      .proj-main {
+        grid-area: main;
+      }
+      .proj-stack {
+        grid-area: stack;
+        align-self: center;
+      }
+      .proj::before {
+        content: "";
+        position: absolute;
+        left: -16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 0;
+        background: var(--accent);
+        transition: height 0.3s ease;
+      }
+      .proj:hover {
+        padding-left: 16px;
+      }
+      .proj:hover::before {
+        height: 60%;
+      }
+      .proj:first-child {
+        border-top: 1px solid var(--faint);
+      }
+
+      .proj-num {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--dim);
+        letter-spacing: 0.1em;
+      }
+      .proj-tag {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        padding: 4px 10px;
+        border: 1px solid var(--faint);
+        border-radius: 999px;
+        color: var(--dim);
+        text-transform: uppercase;
+        justify-self: start;
+      }
+      .proj-tag.og {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .proj-main .title {
+        font-size: clamp(20px, 2.2vw, 26px);
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        transition: color 0.2s;
+        text-wrap: balance;
+      }
+      .proj:hover .proj-main .title {
+        color: var(--accent);
+      }
+      .proj-main .desc {
+        margin-top: 6px;
+        font-size: 14px;
+        color: var(--dim);
+        max-width: 560px;
+        line-height: 1.55;
+      }
+      .proj-stack {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        color: var(--dim);
+        text-align: right;
+        text-transform: uppercase;
+      }
+      .proj-stack i {
+        font-style: normal;
+        display: block;
+        margin-top: 3px;
+        color: var(--faint);
+      }
+      @media (max-width: 640px) {
+        .proj {
+          grid-template-columns: 44px 1fr;
+          grid-template-areas: "num tag" "num main" "num stack";
+          gap: 10px;
+          padding: 22px 0;
+        }
+        .proj-stack {
+          text-align: left;
+        }
+      }
+
+      /* ─── D20 EASTER EGG ──────────────────── */
+      .egg {
+        margin-top: 56px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 32px;
+        align-items: center;
+        padding: 28px;
+        border: 1px dashed var(--faint);
+        border-radius: 6px;
+        position: relative;
+        background: color-mix(in oklch, var(--accent) 3%, transparent);
+      }
+      .egg::before {
+        content: "HIDDEN · D20";
+        position: absolute;
+        top: -9px;
+        left: 22px;
+        padding: 2px 10px;
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: var(--accent);
+      }
+      .d20 {
+        width: 96px;
+        height: 96px;
+        flex-shrink: 0;
+        border: 2px solid var(--accent);
+        transform: rotate(45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-elev);
+        cursor: pointer;
+        user-select: none;
+        transition:
+          box-shadow 0.2s,
+          transform 0.3s;
+        box-shadow: 0 0 0 0 var(--accent-dim);
+      }
+      .d20:hover {
+        box-shadow: 0 0 0 8px var(--accent-dim);
+      }
+      .d20.rolling {
+        animation: tumble 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
+      }
+      @keyframes tumble {
+        0% {
+          transform: rotate(45deg) scale(1);
+        }
+        25% {
+          transform: rotate(200deg) scale(1.1);
+        }
+        50% {
+          transform: rotate(380deg) scale(0.95);
+        }
+        75% {
+          transform: rotate(540deg) scale(1.05);
+        }
+        100% {
+          transform: rotate(720deg) scale(1);
+        }
+      }
+      .d20 .n {
+        transform: rotate(-45deg);
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 32px;
+        color: var(--accent);
+        letter-spacing: -0.03em;
+      }
+      .egg-text .h {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .egg-text .b {
+        font-size: 15px;
+        color: var(--dim);
+        line-height: 1.6;
+        max-width: 480px;
+      }
+      .egg-text .r {
+        display: inline-block;
+        margin-left: 10px;
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 2px 10px;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        letter-spacing: 0.1em;
+        opacity: 0;
+        transform: translateY(4px);
+        transition:
+          opacity 0.3s,
+          transform 0.3s;
+      }
+      .egg-text .r.on {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .egg-text .r.crit {
+        background: var(--accent);
+        color: #000;
+      }
+      .egg-text .r.fail {
+        border-color: #ff3ea5;
+        color: #ff3ea5;
+      }
+      @media (max-width: 640px) {
+        .egg {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+        .d20 {
+          margin: 0 auto;
+        }
+      }
+
+      /* ─── CONTACT ─────────────────────────── */
+      .contact-title {
+        font-family: var(--mono);
+        font-size: clamp(44px, 8vw, 96px);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+        margin: 0;
+      }
+      .contact-title .u {
+        color: var(--accent);
+      }
+      .contact-title small {
+        display: block;
+        font-family: var(--sans);
+        font-size: clamp(15px, 1.4vw, 18px);
+        font-weight: 400;
+        color: var(--dim);
+        letter-spacing: normal;
+        margin-top: 24px;
+        max-width: 560px;
+      }
+      .channels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        margin-top: 56px;
+        border-top: 1px solid var(--faint);
+      }
+      .channel {
+        display: block;
+        padding: 28px 0;
+        border-bottom: 1px solid var(--faint);
+        border-right: 1px solid var(--faint);
+        transition:
+          background 0.2s,
+          padding-left 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .channel:last-child {
+        border-right: none;
+      }
+      .channel:hover {
+        background: rgba(255, 255, 255, 0.02);
+        padding-left: 20px;
+      }
+      .channel .k {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: var(--accent);
+        text-transform: uppercase;
+      }
+      .channel .v {
+        font-family: var(--mono);
+        font-size: clamp(14px, 1.4vw, 17px);
+        margin-top: 8px;
+        color: var(--ink);
+        word-break: break-word;
+      }
+      .channel .arrow-svg {
+        position: absolute;
+        top: 50%;
+        right: 18px;
+        transform: translateY(-50%) translateX(20px);
+        opacity: 0;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        color: var(--accent);
+      }
+      .channel:hover .arrow-svg {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+      }
+      @media (max-width: 720px) {
+        .channels {
+          grid-template-columns: 1fr;
+        }
+        .channel {
+          border-right: none;
+          padding: 22px 0;
+        }
+      }
+
+      /* ─── FOOTER ─────────────────────────── */
+      footer {
+        padding: 32px var(--pad-x) 28px;
+        border-top: 1px solid var(--faint);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      footer .u {
+        color: var(--accent);
+      }
+
+      /* ─── TWEAKS panel ─────────────────────── */
+      .tweaks {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 100;
+        width: 260px;
+        padding: 16px;
+        background: rgba(12, 12, 14, 0.96);
+        border: 1px solid var(--faint);
+        border-radius: 6px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--ink);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        display: none;
+      }
+      .tweaks.active {
+        display: block;
+      }
+      .tweaks h4 {
+        display: flex;
+        justify-content: space-between;
+        margin: 0 0 12px;
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: var(--dim);
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .tweaks h4 span {
+        color: var(--accent);
+      }
+      .tweaks label {
+        display: block;
+        margin: 6px 0 8px;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--dim);
+        text-transform: uppercase;
+      }
+      .tweaks .swatches {
+        display: flex;
+        gap: 8px;
+      }
+      .tweaks .sw {
+        flex: 1;
+        height: 30px;
+        border-radius: 3px;
+        border: 1px solid var(--faint);
+        cursor: pointer;
+        transition:
+          transform 0.12s,
+          border-color 0.12s;
+      }
+      .tweaks .sw.on {
+        border-color: #fff;
+        transform: scale(1.04);
+      }
+      .tweaks .hint {
+        margin-top: 14px;
+        font-size: 9px;
+        color: var(--dim);
+        letter-spacing: 0.15em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-layer bg-glow"></div>
+    <div class="bg-layer bg-grid"></div>
+    <div class="bg-layer bg-scan"></div>
+    <div class="bg-layer bg-noise"></div>
+
+    <!-- ─── NAV ─── -->
+    <header class="nav">
+      <div class="brand"><b>KJ</b><span class="dot">.</span>DEV</div>
+      <nav class="links">
+        <a href="#about">About</a>
+        <a href="#work">Work</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span>LODZ · UTC+1</span>
+      </div>
+    </header>
+
+    <main>
+      <!-- ─── HERO ─── -->
+      <section class="hero">
+        <div class="wrap">
+          <div class="hero-meta">
+            LODZ / UK<br />
+            UTC+1 · <span id="clock">--:--:--</span><br />
+            SYS · ONLINE
+          </div>
+
+          <h1>
+            <span class="glitch" data-text="KRZYSZTOF"
+              ><span>KRZYSZTOF</span></span
+            ><br />
+            <span class="glitch" data-text="JABŁOŃSKI"
+              ><span style="line-height: 1.3">JABŁOŃSKI</span></span
+            ><span class="caret">_</span>
+          </h1>
+
+          <p class="tagline">
+            <b>Full-stack engineer</b> building web &amp; mobile systems for
+            <b>Oil &amp; Gas</b> in the UK. TTRPG &amp; wargame tinkerer after
+            hours. Currently exploring AI in software development.
+          </p>
+
+          <div class="cta">
+            <a href="#contact" class="btn primary">
+              Get in touch
+              <svg
+                class="arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M3 7h8M8 3l4 4-4 4" />
+              </svg>
+            </a>
+            <a href="#work" class="btn">
+              See work
+              <svg
+                class="arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path d="M7 3v8M3 8l4 4 4-4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── ABOUT ─── -->
+      <section id="about" class="sec">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">// 01<span>About</span></div>
+            <h2 class="sec-title">
+              Custom systems over <em>off-the-shelf</em>. Code where
+              <em>AI</em> does real work.
+            </h2>
+          </div>
+
+          <div class="sec-body about">
+            <div class="sec-num" aria-hidden="true"></div>
+            <div>
+              <p>
+                Senior tech enthusiast building web &amp; mobile solutions for
+                the
+                <b>Oil &amp; Gas industry in the UK</b>. Rather than relying on
+                off-the-shelf tools, I love crafting <b>custom systems</b> and
+                autonomous ones tailored to real-world challenges on the rig and
+                in the office.
+              </p>
+              <p>
+                With <b>8+ years</b> of development experience, I'm currently
+                exploring the untapped potential of
+                <b>AI in software development</b> — from personalized coding
+                assistants to context-aware system automation.
+              </p>
+
+              <div class="about-stats">
+                <div class="about-stat">
+                  <div class="n">8<span class="u">+</span></div>
+                  <div class="l">Years shipping</div>
+                </div>
+                <div class="about-stat">
+                  <div class="n">O<span class="u">&amp;</span>G</div>
+                  <div class="l">Primary domain</div>
+                </div>
+                <div class="about-stat">
+                  <div class="n">AI<span class="u">.</span></div>
+                  <div class="l">Current focus</div>
+                </div>
+              </div>
+
+              <!-- terminal skills -->
+              <div class="term" aria-label="Skills terminal">
+                <div class="term-bar">
+                  <div class="dots"><i class="on"></i><i></i><i></i></div>
+                  <div>kj@dev ~ skills.sh</div>
+                  <div>v1.0</div>
+                </div>
+                <div class="term-body">
+                  <div class="term-prompt">
+                    kj@dev:~$ <span class="u">skills --list --verbose</span>
+                  </div>
+                  <div class="term-row">
+                    <span class="k">[ lang ]</span
+                    ><span class="v"
+                      >python &nbsp;<i>advanced</i>&nbsp;·&nbsp; php
+                      &nbsp;<i>senior</i>&nbsp;·&nbsp; dart
+                      &nbsp;<i>senior</i>&nbsp;·&nbsp; js/ts</span
+                    >
+                  </div>
+                  <div class="term-row">
+                    <span class="k">[ front ]</span
+                    ><span class="v"
+                      >vue 3 &nbsp;<i>advanced</i>&nbsp;·&nbsp; flutter
+                      &nbsp;<i>senior</i>&nbsp;·&nbsp; symfony</span
+                    >
+                  </div>
+                  <div class="term-row">
+                    <span class="k">[ infra ]</span
+                    ><span class="v"
+                      >docker &nbsp;·&nbsp; containers &nbsp;·&nbsp; ci/cd
+                      &nbsp;·&nbsp; linux &nbsp;·&nbsp; postgres</span
+                    >
+                  </div>
+                  <div class="term-row">
+                    <span class="k">[ ai ]</span
+                    ><span class="v"
+                      >llm pipelines &nbsp;·&nbsp; rag &nbsp;·&nbsp; agentic
+                      systems &nbsp;·&nbsp; coding assistants</span
+                    >
+                  </div>
+                  <div class="term-row">
+                    <span class="k">[ domain ]</span
+                    ><span class="v"
+                      >oil &amp; gas &nbsp;·&nbsp; inspections &nbsp;·&nbsp;
+                      risk &amp; anomaly tracking</span
+                    >
+                  </div>
+                  <div class="term-prompt" style="margin-top: 10px">
+                    kj@dev:~$ <span class="caret">▋</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── PROJECTS ─── -->
+      <section id="work" class="sec">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">// 02<span>Selected work</span></div>
+            <h2 class="sec-title">
+              A handful of things I've built — <em>day job</em> and otherwise.
+            </h2>
+          </div>
+
+          <div class="sec-body">
+            <div class="sec-num" aria-hidden="true"></div>
+            <div>
+              <div class="proj-grid">
+                <article class="proj">
+                  <div class="proj-num">01</div>
+                  <div class="proj-tag og">Oil &amp; Gas</div>
+                  <div class="proj-main">
+                    <div class="title">PIM Optimum</div>
+                    <div class="desc">
+                      An advanced system for conducting inspections, tracking
+                      anomalies and managing risk on oil platforms.
+                    </div>
+                  </div>
+                  <div class="proj-stack">
+                    Symfony · PHP · Vue 3<i>2024 — current</i>
+                  </div>
+                </article>
+
+                <article class="proj">
+                  <div class="proj-num">02</div>
+                  <div class="proj-tag og">AI / Tooling</div>
+                  <div class="proj-main">
+                    <div class="title">Agentic Assistant</div>
+                    <div class="desc">
+                      An AI assistant that makes my everyday tasks easier —
+                      context-aware automation, small agents, personal ops glue.
+                    </div>
+                  </div>
+                  <div class="proj-stack">
+                    Python · LLMs<i>2025 — ongoing</i>
+                  </div>
+                </article>
+
+                <article class="proj">
+                  <div class="proj-num">03</div>
+                  <div class="proj-tag og">Hobby / TTRPG</div>
+                  <div class="proj-main">
+                    <div class="title">Legion Builder v3</div>
+                    <div class="desc">
+                      Unofficial, fan-made army building software for Star Wars:
+                      Legion. Offline-first, community-driven.
+                    </div>
+                  </div>
+                  <div class="proj-stack">
+                    Python · Flutter<i>hobby · shipped</i>
+                  </div>
+                </article>
+              </div>
+
+              <!-- ── D20 egg ── -->
+              <div
+                class="egg"
+                id="d20-egg"
+                role="button"
+                tabindex="0"
+                aria-label="Roll a d20"
+              >
+                <div class="d20" id="d20">
+                  <div class="n" id="d20-n">20</div>
+                </div>
+                <div class="egg-text">
+                  <div class="h">Roll for initiative ⚄</div>
+                  <div class="b">
+                    Click the die. A small nod to the TTRPG &amp; wargame side
+                    of the desk — rulebooks on the left, repos on the right.
+                    <span class="r" id="d20-result"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── CONTACT ─── -->
+      <section id="contact" class="sec">
+        <div class="wrap">
+          <div class="sec-head">
+            <div class="sec-num">// 03<span>Contact</span></div>
+            <h2 class="sec-title">
+              Let's build something that <em>actually ships</em>.
+            </h2>
+          </div>
+
+          <div class="sec-body">
+            <div class="sec-num" aria-hidden="true"></div>
+            <div>
+              <h3 class="contact-title">
+                contact<span class="u">_</span>
+                <small
+                  >Oil &amp; Gas consulting, AI-assisted systems, or just a chat
+                  about building things in Python, PHP, Flutter or Vue 3.</small
+                >
+              </h3>
+
+              <div class="channels">
+                <a class="channel" href="mailto:krz.jablonski@gmail.com">
+                  <div class="k">Email</div>
+                  <div class="v">krz.jablonski@gmail.com</div>
+                  <svg
+                    class="arrow-svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  >
+                    <path d="M5 13L13 5M6 5h7v7" />
+                  </svg>
+                </a>
+                <a
+                  class="channel"
+                  href="https://github.com/krzjablonski"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <div class="k">GitHub</div>
+                  <div class="v">github.com/krzjablonski</div>
+                  <svg
+                    class="arrow-svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  >
+                    <path d="M5 13L13 5M6 5h7v7" />
+                  </svg>
+                </a>
+                <a
+                  class="channel"
+                  href="https://www.linkedin.com/in/krzysztof-jab%C5%82o%C5%84ski/"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <div class="k">LinkedIn</div>
+                  <div class="v">/in/krzysztof-jabłoński</div>
+                  <svg
+                    class="arrow-svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 18 18"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  >
+                    <path d="M5 13L13 5M6 5h7v7" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 · Krzysztof Jabłoński</span>
+      <span>Built in the dark<span class="u">_</span></span>
+      <span>END OF LINE<span class="u">_</span></span>
+    </footer>
+
+    <!-- ─── TWEAKS panel ─── -->
+    <div class="tweaks" id="tweaks">
+      <h4>accent colour <span>tweaks</span></h4>
+      <label>pick a hue</label>
+      <div class="swatches" id="swatches">
+        <div
+          class="sw"
+          data-k="green"
+          style="background: #00ff9c"
+          title="acid green"
+        ></div>
+        <div
+          class="sw"
+          data-k="cyan"
+          style="background: #22e7ff"
+          title="cyan"
+        ></div>
+        <div
+          class="sw"
+          data-k="magenta"
+          style="background: #ff3ea5"
+          title="magenta"
+        ></div>
+        <div
+          class="sw"
+          data-k="amber"
+          style="background: #ffb43a"
+          title="amber"
+        ></div>
+      </div>
+      <div class="hint">toggle from toolbar · saves to localStorage</div>
+    </div>
+
+    <script>
+      /* ── Tweaks — accent colour persists via localStorage ── */
+      const ACCENTS = {
+        green: "#00ff9c",
+        cyan: "#22e7ff",
+        magenta: "#ff3ea5",
+        amber: "#ffb43a",
+      };
+
+      const saved = localStorage.getItem("kj-accent") || "green";
+
+      function applyAccent(k) {
+        const c = ACCENTS[k] || ACCENTS.green;
+        document.documentElement.style.setProperty("--accent", c);
+        document.documentElement.style.setProperty(
+          "--accent-dim",
+          `color-mix(in oklch, ${c} 25%, transparent)`,
+        );
+        document.querySelectorAll("#swatches .sw").forEach((s) => {
+          s.classList.toggle("on", s.dataset.k === k);
+        });
+        localStorage.setItem("kj-accent", k);
+      }
+      applyAccent(saved);
+
+      document.querySelectorAll("#swatches .sw").forEach((s) => {
+        s.addEventListener("click", () => applyAccent(s.dataset.k));
+      });
+
+      /* toggle tweaks panel with T key */
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "t" || e.key === "T") {
+          document.getElementById("tweaks").classList.toggle("active");
+        }
+      });
+
+      /* ── Clock ── */
+      const clockEl = document.getElementById("clock");
+      function tick() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      }
+      tick();
+      setInterval(tick, 1000);
+
+      /* ── D20 easter egg ── */
+      const d20 = document.getElementById("d20");
+      const d20N = document.getElementById("d20-n");
+      const d20R = document.getElementById("d20-result");
+      const d20Egg = document.getElementById("d20-egg");
+
+      const FLAVOR = {
+        crit: ["NAT 20 — crit!", "Perfect roll.", "The dice favor you."],
+        high: ["Solid roll.", "You succeed.", "It works."],
+        mid: ["Partial success.", "Could be worse.", "You scrape by."],
+        low: ["Rough.", "Not great.", "Try again?"],
+        fail: ["NAT 1 — critical fail.", "Catastrophic.", "Reroll advised."],
+      };
+      const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+      function roll() {
+        if (d20.classList.contains("rolling")) return;
+        d20.classList.add("rolling");
+        d20R.classList.remove("on", "crit", "fail");
+
+        let ticks = 0;
+        const spin = setInterval(() => {
+          d20N.textContent = 1 + Math.floor(Math.random() * 20);
+          ticks++;
+          if (ticks > 10) clearInterval(spin);
+        }, 50);
+
+        setTimeout(() => {
+          const n = 1 + Math.floor(Math.random() * 20);
+          d20N.textContent = n;
+          let bucket = "mid";
+          if (n === 20) bucket = "crit";
+          else if (n === 1) bucket = "fail";
+          else if (n >= 15) bucket = "high";
+          else if (n <= 5) bucket = "low";
+          d20R.textContent = `${n}/20 — ${pick(FLAVOR[bucket])}`;
+          d20R.classList.add("on");
+          if (bucket === "crit") d20R.classList.add("crit");
+          if (bucket === "fail") d20R.classList.add("fail");
+          d20.classList.remove("rolling");
+        }, 600);
+      }
+
+      d20Egg.addEventListener("click", roll);
+      d20Egg.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          roll();
+        }
+      });
+
+      /* ── Smooth nav scroll ── */
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener("click", (e) => {
+          const id = a.getAttribute("href").slice(1);
+          const t = document.getElementById(id);
+          if (!t) return;
+          e.preventDefault();
+          const y = t.getBoundingClientRect().top + window.scrollY - 60;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        });
+      });
+    </script>
+  </body>
+</html>
