@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A bilingual guide to how LLM inference parameters affect quality, latency, and cost.">
+  <title>LLM inference parameters | Inference Atlas</title>
+  <style>
+:root {
+  --bg: #0a0a0b;
+  --elev: #0f0f11;
+  --ink: #ececee;
+  --dim: rgba(236, 236, 238, 0.76);
+  --faint: rgba(236, 236, 238, 0.14);
+  --fainter: rgba(236, 236, 238, 0.06);
+  --accent: #00ff9c;
+  --accent-dim: rgba(0, 255, 156, 0.16);
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Monaco, Consolas, monospace;
+  --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --maxw: 1200px;
+  --pad: clamp(24px, 5vw, 80px);
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  font: inherit;
+}
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+main {
+  min-height: 100vh;
+  position: relative;
+}
+.bgLayer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.bgGrid {
+  background-image:
+    linear-gradient(to right, rgba(236, 236, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(236, 236, 238, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000, transparent 82%);
+}
+.bgScan {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 2px,
+    rgba(255, 255, 255, 0.018) 2px 3px
+  );
+  opacity: 0.22;
+}
+.bgGlow {
+  background:
+    radial-gradient(
+      ellipse 800px 500px at 82% -10%,
+      var(--accent-dim),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 600px 400px at -10% 30%,
+      rgba(0, 255, 156, 0.07),
+      transparent 70%
+    );
+}
+.topbar,
+.wrap,
+.filters,
+.glossary,
+.grid,
+.recipes,
+.principle,
+footer {
+  position: relative;
+  z-index: 1;
+}
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 68px;
+  padding: 0 var(--pad);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--faint);
+  background: rgba(10, 10, 11, 0.74);
+  backdrop-filter: blur(12px);
+}
+.brand {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--dim);
+  text-transform: uppercase;
+}
+.brand b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.brand span {
+  color: var(--accent);
+}
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.portfolioLink {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: color 0.2s;
+}
+.portfolioLink:hover {
+  color: var(--accent);
+}
+.language {
+  height: 34px !important;
+  padding: 2px !important;
+  border: 1px solid var(--faint);
+  border-radius: 2px !important;
+  background: var(--elev) !important;
+}
+.language button {
+  height: 28px !important;
+  min-width: 40px;
+  border-radius: 1px !important;
+  color: var(--dim) !important;
+  font-family: var(--mono);
+  font-size: 12px !important;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+.language button[data-state="active"] {
+  background: var(--accent) !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+.hero {
+  min-height: 650px;
+  padding: clamp(78px, 12vh, 140px) 0 clamp(90px, 14vh, 160px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(290px, 0.65fr);
+  align-items: center;
+  gap: 7vw;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: rgba(0, 255, 156, 0.04);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.pill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2.2s infinite;
+}
+.hero h1 {
+  position: relative;
+  display: inline-block;
+  max-width: 850px;
+  margin: 28px 0 0;
+  font-family: var(--mono);
+  font-size: clamp(48px, 8.5vw, 126px);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+.caret {
+  color: var(--accent);
+  font-weight: 500;
+  animation: blink 1.05s steps(2) infinite;
+}
+.glitch:before,
+.glitch:after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+.glitch:before {
+  color: var(--accent);
+  transform: translateX(-2px);
+  clip-path: polygon(0 0, 100% 0, 100% 44%, 0 44%);
+  animation: glitchA 4.3s steps(1) infinite;
+}
+.glitch:after {
+  color: #ff3ea5;
+  transform: translateX(2px);
+  clip-path: polygon(0 58%, 100% 58%, 100% 100%, 0 100%);
+  animation: glitchB 4.3s steps(1) infinite;
+}
+.lead {
+  max-width: 680px;
+  margin: 34px 0 0;
+  color: var(--dim);
+  font-size: clamp(16px, 1.6vw, 20px);
+  line-height: 1.6;
+}
+.chart {
+  height: 280px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  padding: 30px 20px 34px;
+  border: 1px solid var(--faint);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.008)),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 55px,
+      var(--fainter) 56px
+    );
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+}
+.chart > b {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  color: var(--dim);
+  font: 500 12px var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.chart > i {
+  width: clamp(12px, 2vw, 28px);
+  background: var(--accent);
+  opacity: 0.72;
+  box-shadow: 0 0 12px rgba(0, 255, 156, 0.16);
+  animation: rise 0.7s both;
+}
+.chart span {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  color: var(--dim);
+  font: 12px var(--mono);
+}
+.filters {
+  padding: 18px max(var(--pad), calc((100vw - var(--maxw)) / 2 + var(--pad)));
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-block: 1px solid var(--faint);
+  background: rgba(10, 10, 11, 0.84);
+  backdrop-filter: blur(10px);
+}
+.filterPrompt {
+  margin-right: 10px;
+  color: var(--accent);
+  font: 12px var(--mono);
+  letter-spacing: 0.08em;
+}
+.filters button {
+  padding: 7px 12px;
+  border: 1px solid var(--faint);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.filters button:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.filters button.active {
+  color: #000;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.glossary {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 36px var(--pad) 0;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.32fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.glossaryIntro h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 600;
+}
+.glossaryIntro p {
+  margin: 8px 0 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.glossaryTerms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.glossaryTerm {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 11px;
+  border: 1px solid var(--faint);
+  border-radius: 2px;
+  background: var(--elev);
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+.glossaryTerm:hover,
+.glossaryTerm:focus-visible {
+  border-color: var(--accent);
+  background: rgba(0, 255, 156, 0.05);
+  color: var(--accent);
+  outline: none;
+}
+.glossaryTerm span {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font: 11px var(--mono);
+}
+.glossaryPopover {
+  z-index: 80 !important;
+  width: min(340px, calc(100vw - 32px)) !important;
+  border-color: rgba(0, 255, 156, 0.42) !important;
+  border-radius: 2px !important;
+  background: #121214 !important;
+  color: var(--ink) !important;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.55) !important;
+}
+.glossaryPopoverTitle {
+  color: var(--accent);
+  font: 500 14px var(--mono);
+}
+.glossaryPopoverDescription {
+  margin-top: 8px;
+  color: var(--dim) !important;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.grid {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: clamp(64px, 9vh, 110px) var(--pad);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+.card {
+  position: relative;
+  display: block;
+  min-height: 0;
+  padding: 44px 0;
+  border-top: 1px solid var(--faint);
+  transition:
+    padding 0.25s,
+    background 0.25s;
+}
+.card:last-child {
+  border-bottom: 1px solid var(--faint);
+}
+.card:before {
+  display: none;
+}
+.card:hover {
+  background: linear-gradient(90deg, rgba(0, 255, 156, 0.025), transparent 65%);
+}
+.meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.meta > span {
+  color: var(--dim);
+  font: 12px var(--mono);
+}
+.meta b {
+  padding: 6px 10px;
+  border: 1px solid var(--faint);
+  border-radius: 999px;
+  color: var(--dim);
+  font: 11px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.meta b.sampling,
+.meta b.length,
+.meta b.behavior,
+.meta b.reasoning,
+.meta b.control {
+  background: transparent;
+  color: var(--accent);
+  border-color: rgba(0, 255, 156, 0.42);
+}
+.card h2 {
+  margin: 28px 0 0;
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.card h2 code {
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.card:hover h2 {
+  color: var(--accent);
+}
+.intro {
+  margin: 18px 0 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+.detail {
+  max-width: 900px;
+  margin: 18px 0 0;
+  color: var(--dim);
+  font-size: 16px;
+  line-height: 1.75;
+}
+.card dl {
+  margin: 32px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-block: 1px solid var(--fainter);
+}
+.card dl > div {
+  min-width: 0;
+  padding: 20px 28px 20px 0;
+}
+.card dl > div + div {
+  padding-left: 28px;
+  border-left: 1px solid var(--fainter);
+}
+dt,
+.range span {
+  color: var(--accent);
+  font: 11px var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+dd {
+  margin: 9px 0 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.card .impact,
+.card .example {
+  margin-top: 18px;
+  padding: 18px 20px;
+}
+.card .impact {
+  border: 1px solid var(--fainter);
+  background: rgba(255, 255, 255, 0.012);
+}
+.card .example {
+  border-left: 2px solid rgba(122, 205, 255, 0.8);
+  background: rgba(122, 205, 255, 0.035);
+}
+.card .impact h3,
+.card .example h3 {
+  margin: 0;
+  color: var(--accent);
+  font: 11px var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.card .example h3 {
+  color: #7acdff;
+}
+.card .impact p,
+.card .example p {
+  max-width: 980px;
+  margin: 10px 0 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.paramComparison {
+  margin-top: 18px;
+  border: 1px solid rgba(122, 205, 255, 0.24);
+  background: rgba(122, 205, 255, 0.018);
+}
+.paramComparison > header {
+  padding: 20px;
+  border-bottom: 1px solid var(--fainter);
+}
+.paramComparison > header h3 {
+  margin: 0;
+  color: #7acdff;
+  font: 12px var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.paramComparison > header p,
+.comparisonConclusion {
+  max-width: 940px;
+  margin: 10px 0 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.comparisonHead,
+.comparisonRow {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.35fr) repeat(2, minmax(0, 1fr));
+}
+.comparisonHead {
+  border-bottom: 1px solid var(--fainter);
+}
+.comparisonHead code {
+  padding: 12px 18px;
+  color: var(--accent);
+  font: 12px var(--mono);
+}
+.comparisonHead code + code,
+.comparisonRow > div + div {
+  border-left: 1px solid var(--fainter);
+}
+.comparisonRow {
+  border-bottom: 1px solid var(--fainter);
+}
+.comparisonRow h4,
+.comparisonRow > div {
+  margin: 0;
+  padding: 18px;
+}
+.comparisonRow h4 {
+  color: var(--ink);
+  font: 12px var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.comparisonRow > div > code {
+  display: none;
+  color: var(--accent);
+  font: 11px var(--mono);
+}
+.comparisonRow p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.comparisonConclusion {
+  margin: 0;
+  padding: 20px;
+  color: var(--ink);
+}
+.range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.range code {
+  padding: 7px 10px;
+  border: 1px solid var(--faint);
+  color: var(--ink);
+  font: 13px var(--mono);
+}
+.card aside {
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-left: 2px solid var(--accent);
+  background: rgba(0, 255, 156, 0.035);
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.card aside strong {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-weight: 500;
+}
+.recipes {
+  padding: clamp(74px, 10vh, 120px)
+    max(var(--pad), calc((100vw - var(--maxw)) / 2 + var(--pad)));
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 40px;
+  border-top: 1px solid var(--faint);
+}
+.recipeIntro .eyebrow {
+  margin: 0 0 18px;
+  color: var(--accent);
+  font: 12px var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.recipeIntro .eyebrow i {
+  display: none;
+}
+.recipeIntro h2 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 500;
+  line-height: 1.12;
+}
+.recipeIntro > p:last-child {
+  margin-top: 20px;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.65;
+}
+.recipeGrid {
+  display: grid;
+  gap: 0;
+}
+.recipeGrid article {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 18px;
+  padding: 28px 0;
+  border-top: 1px solid var(--faint);
+}
+.recipeGrid article:last-child {
+  border-bottom: 1px solid var(--faint);
+}
+.recipeGrid em {
+  padding-top: 4px;
+  color: var(--accent);
+  font: 13px var(--mono);
+  font-style: normal;
+}
+.recipeGrid h3 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  font-weight: 500;
+}
+.recipeGrid ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recipeGrid li {
+  padding: 7px 9px;
+  border: 1px solid var(--faint);
+  background: var(--elev);
+}
+.recipeGrid code {
+  color: var(--dim);
+  font: 13px var(--mono);
+}
+.principle {
+  max-width: calc(var(--maxw) - var(--pad) * 2);
+  margin: 0 auto clamp(70px, 10vh, 120px);
+  padding: 28px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+  border: 1px dashed var(--faint);
+  background: rgba(0, 255, 156, 0.025);
+}
+.principle > b {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--accent);
+  transform: rotate(45deg);
+  color: var(--accent);
+  font: 700 26px var(--mono);
+}
+.principle > b span {
+  transform: rotate(-45deg);
+}
+.principle h2 {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font: 13px var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.principle p {
+  max-width: 820px;
+  margin: 0;
+  color: var(--dim);
+  font-size: 16px;
+  line-height: 1.65;
+}
+footer {
+  min-height: 140px;
+  padding: 36px var(--pad);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  border-top: 1px solid var(--faint);
+}
+footer a {
+  color: var(--ink);
+  font: 12px var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+footer a:hover {
+  color: var(--accent);
+}
+footer p {
+  max-width: 620px;
+  margin: 0;
+  color: var(--dim);
+  font: 12px/1.65 var(--mono);
+  text-align: right;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 156, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  from {
+    transform: scaleY(0.12);
+    opacity: 0.1;
+  }
+}
+@keyframes glitchA {
+  0%,
+  93%,
+  100% {
+    opacity: 0;
+    transform: translate(-2px);
+  }
+  94% {
+    opacity: 0.7;
+    transform: translate(-4px);
+  }
+  95% {
+    opacity: 0.9;
+    transform: translate(1px, 1px);
+  }
+  96% {
+    opacity: 0.4;
+    transform: translate(-3px, -1px);
+  }
+  97% {
+    opacity: 0;
+  }
+}
+@keyframes glitchB {
+  0%,
+  93%,
+  100% {
+    opacity: 0;
+    transform: translate(2px);
+  }
+  94% {
+    opacity: 0.6;
+    transform: translate(4px, 1px);
+  }
+  95% {
+    opacity: 0.8;
+    transform: translate(-1px, -1px);
+  }
+  96% {
+    opacity: 0.4;
+    transform: translate(3px, 1px);
+  }
+  97% {
+    opacity: 0;
+  }
+}
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .chart {
+    height: 220px;
+    max-width: 560px;
+  }
+  .range {
+    margin-top: 22px;
+  }
+  .card aside {
+    margin-top: 18px;
+  }
+  .recipes {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .principle {
+    margin-inline: var(--pad);
+  }
+}
+@media (max-width: 640px) {
+  .topbar {
+    height: 62px;
+  }
+  .brand {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .portfolioLink {
+    display: none;
+  }
+  .navActions {
+    gap: 8px;
+  }
+  .hero {
+    min-height: auto;
+    padding: 72px 0 86px;
+  }
+  .hero h1 {
+    font-size: clamp(43px, 14vw, 68px);
+  }
+  .chart {
+    height: 165px;
+  }
+  .filters {
+    padding-inline: var(--pad);
+  }
+  .filterPrompt {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  .glossary {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding-top: 28px;
+  }
+  .card {
+    gap: 13px;
+    padding: 34px 0;
+  }
+  .card dl {
+    grid-template-columns: 1fr;
+  }
+  .card dl > div + div {
+    padding-left: 0;
+    border-left: 0;
+    padding-top: 18px;
+  }
+  .range {
+    flex-wrap: wrap;
+  }
+  .comparisonHead {
+    display: none;
+  }
+  .comparisonRow {
+    grid-template-columns: 1fr;
+  }
+  .comparisonRow h4 {
+    padding-bottom: 0;
+  }
+  .comparisonRow > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--fainter);
+  }
+  .comparisonRow > div > code {
+    display: block;
+    margin-bottom: 9px;
+  }
+  .principle {
+    grid-template-columns: 1fr;
+  }
+  .principle > b {
+    width: 50px;
+    height: 50px;
+  }
+  footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  footer p {
+    text-align: left;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+.language { display: flex; align-items: center; }
+.language button { border: 0; background: transparent; }
+.glossaryDialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid rgba(0, 255, 156, 0.5);
+  border-radius: 2px;
+  background: #121214;
+  color: var(--ink);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.75);
+}
+.glossaryDialog::backdrop { background: rgba(0, 0, 0, 0.72); backdrop-filter: blur(3px); }
+.glossaryDialogInner { padding: 26px; }
+.glossaryDialog h2 { margin: 0; color: var(--accent); font: 500 17px var(--mono); }
+.glossaryDialog p { margin: 14px 0 0; color: var(--dim); font-size: 16px; line-height: 1.7; }
+.dialogClose {
+  float: right;
+  width: 36px;
+  height: 36px;
+  margin: -8px -8px 10px 14px;
+  border: 1px solid var(--faint);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: 20px var(--mono);
+}
+.dialogClose:hover, .dialogClose:focus-visible { color: var(--accent); border-color: var(--accent); outline: none; }
+noscript { display: block; padding: 24px; background: #201414; color: #fff; font: 16px/1.5 system-ui; }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <dialog id="glossaryDialog" class="glossaryDialog" aria-labelledby="glossaryDialogTitle">
+    <div class="glossaryDialogInner">
+      <button type="button" class="dialogClose" data-close-dialog aria-label="Close">×</button>
+      <h2 id="glossaryDialogTitle"></h2>
+      <p id="glossaryDialogText"></p>
+    </div>
+  </dialog>
+  <noscript>This page requires JavaScript. / Ta strona wymaga włączonego JavaScriptu.</noscript>
+  <script>(function clientBoot(DATA) {
+  const root = document.getElementById("app");
+  const dialog = document.getElementById("glossaryDialog");
+  const dialogTitle = document.getElementById("glossaryDialogTitle");
+  const dialogText = document.getElementById("glossaryDialogText");
+  let lang = "en";
+  try {
+    lang = localStorage.getItem("atlas-lang") === "pl" ? "pl" : "en";
+  } catch {}
+  let group = "all";
+
+  const h = (value) =>
+    String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  const guideFor = (parameter) => DATA.GUIDE[parameter.name];
+  const guidanceFor = (parameter, key) =>
+    DATA.GUIDANCE[parameter.name]?.[key]?.[lang] ?? parameter[key][lang];
+
+  function renderCard(parameter) {
+    const t = DATA.L[lang];
+    const guide = guideFor(parameter);
+    const index = DATA.P.indexOf(parameter) + 1;
+    const example = DATA.EXAMPLES[parameter.name];
+    const comparison = DATA.TOP_P_COMPARISON[lang];
+    const comparisonHtml =
+      parameter.name === "top_p"
+        ? `<section class="paramComparison">
+            <header><h3>${h(comparison.title)}</h3><p>${h(comparison.lead)}</p></header>
+            <div class="comparisonHead" aria-hidden="true"><span></span><code>temperature</code><code>top_p</code></div>
+            ${comparison.rows
+              .map(
+                (row) => `<div class="comparisonRow">
+                  <h4>${h(row.label)}</h4>
+                  <div><code>temperature</code><p>${h(row.temperature)}</p></div>
+                  <div><code>top_p</code><p>${h(row.topP)}</p></div>
+                </div>`,
+              )
+              .join("")}
+            <p class="comparisonConclusion">${h(comparison.conclusion)}</p>
+          </section>`
+        : "";
+
+    return `<article class="card">
+      <div class="meta"><span>${String(index).padStart(2, "0")}</span><b class="${h(parameter.group)}">${h(t.groups[parameter.group])}</b></div>
+      <div class="cardMain">
+        <h2><code>${h(parameter.name)}</code></h2>
+        <p class="intro">${h(guide.intro[lang])}</p>
+        <p class="detail">${h(guide.detail[lang])}</p>
+        <div class="range"><span>${h(t.range)}</span><code>${h(guide.range[lang])}</code></div>
+      </div>
+      <dl>
+        <div><dt>${h(t.low)}</dt><dd>${h(guidanceFor(parameter, "low"))}</dd></div>
+        <div><dt>${h(t.high)}</dt><dd>${h(guidanceFor(parameter, "high"))}</dd></div>
+      </dl>
+      <section class="impact"><h3>${h(t.impact)}</h3><p>${h(guide.impact[lang])}</p></section>
+      ${example ? `<section class="example"><h3>${h(t.example)}</h3><p>${h(example[lang])}</p></section>` : ""}
+      ${comparisonHtml}
+      <aside><strong>↳ ${h(t.tip)}:</strong> ${h(guidanceFor(parameter, "tip"))}</aside>
+    </article>`;
+  }
+
+  function render() {
+    const t = DATA.L[lang];
+    const visible =
+      group === "all" ? DATA.P : DATA.P.filter((parameter) => parameter.group === group);
+    document.documentElement.lang = lang;
+    document.title =
+      lang === "pl"
+        ? "Parametry inferencji LLM | Inference Atlas"
+        : "LLM inference parameters | Inference Atlas";
+
+    root.innerHTML = `<main>
+      <div class="bgLayer bgGrid" aria-hidden="true"></div>
+      <div class="bgLayer bgScan" aria-hidden="true"></div>
+      <div class="bgLayer bgGlow" aria-hidden="true"></div>
+      <header class="topbar">
+        <a class="brand" href="#top"><b>kj</b>/inference_atlas<span>.</span></a>
+        <div class="navActions">
+          <a class="portfolioLink" href="https://krzjablonski.github.io/" target="_blank" rel="noreferrer">← portfolio</a>
+          <div class="language" role="group" aria-label="Language">
+            <button type="button" data-lang="pl" data-state="${lang === "pl" ? "active" : "inactive"}">PL</button>
+            <button type="button" data-lang="en" data-state="${lang === "en" ? "active" : "inactive"}">EN</button>
+          </div>
+        </div>
+      </header>
+      <div class="wrap">
+        <section id="top" class="hero">
+          <div>
+            <p class="pill"><i></i>${h(t.eyebrow)}</p>
+            <h1 class="glitch" data-text="${h(t.title)}">${h(t.title)}<span class="caret">_</span></h1>
+            <p class="lead">${h(t.lead)}</p>
+          </div>
+          <div class="chart" aria-hidden="true">
+            <b>${h(t.chartTitle)}</b>
+            ${[38, 57, 79, 100, 76, 54, 35, 22, 14].map((height) => `<i style="height:${height}%"></i>`).join("")}
+            <span>${h(t.chartLabel)}</span>
+          </div>
+        </section>
+      </div>
+      <nav class="filters" aria-label="${h(t.filter)}">
+        <span class="filterPrompt">${h(t.filter)}</span>
+        ${["all", "sampling", "length", "behavior", "reasoning", "control"]
+          .map(
+            (key) => `<button type="button" data-group="${key}" class="${group === key ? "active" : ""}">${h(key === "all" ? t.all : t.groups[key])}</button>`,
+          )
+          .join("")}
+      </nav>
+      <section class="glossary" aria-labelledby="glossary-title">
+        <div class="glossaryIntro"><h2 id="glossary-title">${h(t.glossary)}</h2><p>${h(t.glossaryLead)}</p></div>
+        <div class="glossaryTerms">
+          ${DATA.GLOSSARY.map(
+            (item, index) => `<button type="button" class="glossaryTerm" data-glossary="${index}">${h(item.term[lang])}<span aria-hidden="true">?</span></button>`,
+          ).join("")}
+        </div>
+      </section>
+      <section class="grid">${visible.map(renderCard).join("")}</section>
+      <section class="recipes">
+        <div class="recipeIntro"><p class="eyebrow"><i></i>${h(t.recipes)}</p><h2>${h(t.recipes)}</h2><p>${h(t.recipeLead)}</p></div>
+        <div class="recipeGrid">
+          ${DATA.R.map(
+            ({ key, lines }, index) => `<article><em>0${index + 1}</em><div><h3>${h(t[key])}</h3><ul>${lines[lang]
+              .map((line) => `<li><code>${h(line)}</code></li>`)
+              .join("")}</ul></div></article>`,
+          ).join("")}
+        </div>
+      </section>
+      <aside class="principle"><b><span>!</span></b><div><h2>${h(t.note)}</h2><p>${h(t.noteBody)}</p></div></aside>
+      <footer><a href="https://krzjablonski.github.io/" target="_blank" rel="noreferrer">krzjablonski.github.io ↗</a><p>${h(t.footer)}</p></footer>
+    </main>`;
+  }
+
+  document.addEventListener("click", (event) => {
+    const languageButton = event.target.closest("[data-lang]");
+    if (languageButton) {
+      lang = languageButton.dataset.lang;
+      try {
+        localStorage.setItem("atlas-lang", lang);
+      } catch {}
+      render();
+      return;
+    }
+
+    const groupButton = event.target.closest("[data-group]");
+    if (groupButton) {
+      group = groupButton.dataset.group;
+      render();
+      return;
+    }
+
+    const glossaryButton = event.target.closest("[data-glossary]");
+    if (glossaryButton) {
+      const item = DATA.GLOSSARY[Number(glossaryButton.dataset.glossary)];
+      dialogTitle.textContent = item.term[lang];
+      dialogText.textContent = item.definition[lang];
+      dialog.showModal();
+      return;
+    }
+
+    if (event.target.closest("[data-close-dialog]")) dialog.close();
+  });
+
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  render();
+})({"P":[{"name":"temperature","group":"sampling","range":"0–2 (typowo 0–1)","intro":{"pl":"Reguluje losowość próbkowania kolejnego tokenu.","en":"Controls randomness when sampling the next token."},"detail":{"pl":"Skaluje cały rozkład prawdopodobieństwa. Niska wartość wzmacnia najbardziej prawdopodobne odpowiedzi; wyższa dopuszcza mniej oczywiste wybory. Nie dodaje modelowi wiedzy. Zwiększa różnorodność losowania.","en":"Scales the full probability distribution. Low values favor likely continuations; higher values admit less obvious choices. It adds no knowledge. It increases sampling diversity."},"low":{"pl":"Stabilniej i bardziej powtarzalnie; zwykle lepiej dla kodu i ekstrakcji.","en":"More stable and repeatable; usually better for code and extraction."},"high":{"pl":"Więcej wariantów, ale także większe ryzyko niespójności.","en":"More variety, but also a higher risk of inconsistency."},"tip":{"pl":"Obniżaj, gdy fakty lub format muszą być stabilne.","en":"Lower it when facts or format must remain stable."}},{"name":"top_p","group":"sampling","range":"0–1","intro":{"pl":"Wybiera z najmniejszego zbioru tokenów o łącznej masie p.","en":"Samples from the smallest token set whose cumulative probability is p."},"detail":{"pl":"Przy top_p = 0,1 model zachowuje najmniejszą grupę opcji, których szanse sumują się do co najmniej 10%. Temperature płynnie zmienia proporcje między wszystkimi opcjami, natomiast top_p usuwa te, które znajdą się poza ruchomą granicą.","en":"At top_p = 0.1, the model keeps the smallest group of options whose probabilities total at least 10%. Temperature smoothly changes the balance among every option, while top_p removes those outside a moving boundary."},"low":{"pl":"Węższy dobór słów i mniejsza różnorodność.","en":"Narrower vocabulary and lower diversity."},"high":{"pl":"Większa część rozkładu pozostaje dostępna.","en":"More of the distribution remains available."},"tip":{"pl":"Zwykle dostrajaj temperature albo top_p, nie oba naraz.","en":"Usually tune temperature or top_p, not both."}},{"name":"top_k","group":"sampling","range":"integer ≥ 1","intro":{"pl":"Ogranicza wybór do k najbardziej prawdopodobnych tokenów.","en":"Restricts selection to the k most probable tokens."},"detail":{"pl":"W przeciwieństwie do top_p rozmiar zbioru jest stały. Przy k = 1 generowanie jest zachłanne. Częsty w silnikach open source, ale nie jest standardowym parametrem OpenAI API.","en":"Unlike top_p, the set size is fixed. At k = 1 generation is greedy. Common in open-source engines, but not a standard OpenAI API parameter."},"low":{"pl":"Bardzo konserwatywne słownictwo.","en":"Very conservative vocabulary."},"high":{"pl":"Więcej kandydatów na każdym kroku.","en":"More candidates at each step."},"tip":{"pl":"Sprawdź dokumentację konkretnego silnika inferencji.","en":"Check your inference engine documentation."}},{"name":"max_output_tokens","group":"length","range":"zależny od modelu","intro":{"pl":"Ustawia twardy górny limit liczby tokenów odpowiedzi.","en":"Sets a hard upper bound on output tokens."},"detail":{"pl":"Chroni budżet i opóźnienie, lecz zbyt niski limit może urwać odpowiedź. Odpowiednikiem bywa max_completion_tokens; w modelach rozumujących limit może obejmować także tokeny rozumowania.","en":"Protects cost and latency, but a low limit can truncate the answer. Some APIs use max_completion_tokens; reasoning models may also count reasoning tokens."},"low":{"pl":"Niższy koszt i szybsze zakończenie, ryzyko ucięcia.","en":"Lower cost and faster completion, with truncation risk."},"high":{"pl":"Więcej miejsca na pełną odpowiedź, potencjalnie wyższy koszt.","en":"More room for a complete answer, potentially higher cost."},"tip":{"pl":"Zostaw zapas i sprawdzaj powód zakończenia odpowiedzi.","en":"Leave headroom and inspect the finish reason."}},{"name":"stop","group":"length","range":"tekst lub lista","intro":{"pl":"Kończy generowanie po wskazanej sekwencji.","en":"Stops generation at a specified sequence."},"detail":{"pl":"Sekwencja stop zwykle nie trafia do wyniku. Pomaga rozdzielać rekordy lub sekcje, ale może zakończyć tekst przedwcześnie, jeśli fraza pojawi się naturalnie.","en":"The stop sequence is usually omitted. It helps delimit records or sections, but can end output early if the phrase occurs naturally."},"low":{"pl":"Model kończy naturalnie lub po osiągnięciu limitu.","en":"The model stops naturally or at the token limit."},"high":{"pl":"Więcej reguł daje kontrolę, ale zwiększa ryzyko kolizji.","en":"More rules add control but increase collision risk."},"tip":{"pl":"Używaj charakterystycznych znaczników końca zamiast popularnych słów.","en":"Use distinctive end markers rather than common words."}},{"name":"frequency_penalty","group":"behavior","range":"często −2 do 2","intro":{"pl":"Karze token proporcjonalnie do liczby jego wcześniejszych wystąpień.","en":"Penalizes a token in proportion to its prior occurrences."},"detail":{"pl":"Każde kolejne użycie powtarzanego tokenu staje się mniej atrakcyjne. Ogranicza uporczywe frazy; zbyt wysoka wartość może powodować nienaturalne synonimy.","en":"Each repeated use becomes less attractive. It curbs persistent phrases; excessive values can force awkward synonyms."},"low":{"pl":"Naturalne powtórzenia pozostają możliwe.","en":"Natural repetition remains possible."},"high":{"pl":"Silniejsze unikanie wielokrotnie użytych słów.","en":"Stronger avoidance of repeated words."},"tip":{"pl":"Podnoś małymi krokami dopiero po zauważeniu powtórzeń.","en":"Increase gradually only after observing repetition."}},{"name":"presence_penalty","group":"behavior","range":"często −2 do 2","intro":{"pl":"Karze token już za samo wcześniejsze pojawienie się.","en":"Penalizes a token simply for appearing earlier."},"detail":{"pl":"Nie liczy częstotliwości. Ważne jest tylko, czy token już wystąpił. Dodatnie wartości zachęcają do nowych pojęć; ujemne wspierają stałe słownictwo.","en":"It ignores frequency. Only prior presence matters. Positive values encourage new concepts; negative values reinforce existing vocabulary."},"low":{"pl":"Większa spójność tematyczna i terminologiczna.","en":"Greater topical and terminological consistency."},"high":{"pl":"Więcej nowych tematów i słownictwa.","en":"More new topics and vocabulary."},"tip":{"pl":"Unikaj wysokich wartości przy wymaganej stałej terminologii.","en":"Avoid high values when terminology must stay consistent."}},{"name":"repetition_penalty","group":"behavior","range":"zależny od silnika","intro":{"pl":"Modyfikuje szanse wcześniej użytych tokenów, ograniczając pętle.","en":"Adjusts probabilities of prior tokens to reduce loops."},"detail":{"pl":"Popularny w bibliotekach open source. Wzór, zakres i wartość neutralna zależą od implementacji; często neutralne jest 1,0. Nie jest odpowiednikiem 1:1 kar frequency/presence.","en":"Common in open-source libraries. Formula, range, and neutral value vary; often 1.0 is neutral. It is not a 1:1 equivalent of frequency/presence penalties."},"low":{"pl":"Mniejsza ingerencja w naturalny rozkład.","en":"Less interference with the natural distribution."},"high":{"pl":"Mniej pętli, lecz możliwa degradacja stylu.","en":"Fewer loops, but possible style degradation."},"tip":{"pl":"Ustal wartość neutralną w dokumentacji silnika.","en":"Confirm the neutral value in your engine docs."}},{"name":"reasoning.effort","group":"reasoning","range":"poziomy zależne od modelu","intro":{"pl":"Określa budżet pracy przeznaczony na rozumowanie.","en":"Sets the amount of work devoted to reasoning."},"detail":{"pl":"Wyższy poziom może pomóc w złożonym kodzie, matematyce i planowaniu wieloetapowym. Zwykle zwiększa opóźnienie i tokeny rozumowania; nie każdy model obsługuje wszystkie poziomy.","en":"Higher levels can help with complex code, math, and multi-step planning. They usually increase latency and reasoning tokens; support varies by model."},"low":{"pl":"Szybciej i taniej dla prostych poleceń.","en":"Faster and cheaper for straightforward requests."},"high":{"pl":"Więcej analizy dla trudnych problemów.","en":"More analysis for difficult problems."},"tip":{"pl":"Dobieraj do trudności; nie ustawiaj wysoko rutynowo.","en":"Match task difficulty; do not default to high."}},{"name":"verbosity","group":"reasoning","range":"low · medium · high","intro":{"pl":"Steruje szczegółowością widocznej odpowiedzi.","en":"Controls the detail level of the visible answer."},"detail":{"pl":"Zmienia długość i rozwinięcie wypowiedzi, a nie głębokość rozumowania. Można połączyć wysokie reasoning effort z niską verbosity.","en":"Changes answer length and elaboration, not reasoning depth. High reasoning effort can be paired with low verbosity."},"low":{"pl":"Krócej i mniej objaśnień.","en":"Shorter, with fewer explanations."},"high":{"pl":"Więcej kontekstu, przykładów i uzasadnień.","en":"More context, examples, and rationale."},"tip":{"pl":"Nie traktuj verbosity jako zamiennika limitu tokenów.","en":"Do not treat verbosity as a token-limit substitute."}},{"name":"seed","group":"control","range":"integer","intro":{"pl":"Ułatwia odtwarzanie podobnych wyników dla tych samych wejść.","en":"Helps reproduce similar results for identical inputs."},"detail":{"pl":"Ten sam seed, model i parametry zwiększają powtarzalność, lecz infrastruktura i aktualizacje nadal mogą zmienić wynik. To pomoc testowa, nie gwarancja.","en":"The same seed, model, and settings improve repeatability, but infrastructure and updates can still change output. It is a testing aid, not a guarantee."},"low":{"pl":"Różne seedy dają różne ścieżki próbkowania.","en":"Different seeds produce different sampling paths."},"high":{"pl":"Większa liczba nie oznacza wyższej jakości.","en":"A larger number does not mean higher quality."},"tip":{"pl":"Zapisuj również wersję modelu i wszystkie parametry.","en":"Record the model version and all parameters."}},{"name":"n","group":"control","range":"integer ≥ 1","intro":{"pl":"Określa liczbę alternatywnych odpowiedzi dla jednego wejścia.","en":"Sets the number of alternative responses for one input."},"detail":{"pl":"Ułatwia wybór najlepszego wariantu lub automatyczne porównanie kilku odpowiedzi. Koszt rośnie wraz z łączną liczbą wygenerowanych tokenów, więc w produkcji najczęstsze jest n = 1.","en":"Makes it easier to choose the best variant or compare several answers automatically. Cost grows with total generated tokens, so n = 1 is most common in production."},"low":{"pl":"Najniższy koszt i prostsza obsługa.","en":"Lowest cost and simplest handling."},"high":{"pl":"Większa szansa na dobry wariant, więcej generowania.","en":"Better odds of a strong candidate, more generation."},"tip":{"pl":"Generuj wiele wariantów tylko, gdy potrafisz je ocenić.","en":"Generate candidates only when you can evaluate them."}},{"name":"logprobs","group":"control","range":"boolean / count","intro":{"pl":"Zwraca logarytmy prawdopodobieństw tokenów.","en":"Returns token log probabilities."},"detail":{"pl":"Pozwala badać względną pewność na poziomie tokenów i alternatywy. Nie jest skalibrowanym prawdopodobieństwem prawdziwości całej odpowiedzi.","en":"Exposes token-level relative confidence and alternatives. It is not a calibrated probability that the whole answer is true."},"low":{"pl":"Mniejsza odpowiedź API.","en":"Smaller API response."},"high":{"pl":"Więcej danych diagnostycznych.","en":"More diagnostic data."},"tip":{"pl":"Przy klasyfikacji kalibruj wynik na danych walidacyjnych.","en":"For classification, calibrate on validation data."}},{"name":"logit_bias","group":"control","range":"token ID → bias","intro":{"pl":"Zmienia szanse wybranych tokenów przed kolejnym wyborem.","en":"Adjusts the chances of selected tokens before the next choice."},"detail":{"pl":"Dodatnia wartość zwiększa szansę tokenu, ujemna ją zmniejsza; skrajne wartości mogą go praktycznie wymusić lub zablokować. Działa na tokenach, nie całych słowach.","en":"Positive values raise a token's chance, negative values lower it; extremes can nearly force or ban it. It operates on tokens, not whole words."},"low":{"pl":"Ujemne wartości zniechęcają do tokenu.","en":"Negative values discourage the token."},"high":{"pl":"Dodatnie wartości preferują token.","en":"Positive values favor the token."},"tip":{"pl":"Sprawdź tokenizację spacji, odmian i wielkości liter.","en":"Inspect spacing, inflection, and capitalization tokenization."}},{"name":"response_format","group":"control","range":"text · JSON · JSON Schema","intro":{"pl":"Określa oczekiwany format danych wyjściowych.","en":"Defines the expected output format."},"detail":{"pl":"Structured Outputs z JSON Schema mogą wymusić zgodność ze schematem. Sam tryb JSON zapewnia poprawny JSON, lecz niekoniecznie właściwe pola i typy.","en":"Structured Outputs with JSON Schema can enforce a schema. Plain JSON mode ensures valid JSON, but not necessarily correct fields and types."},"low":{"pl":"Tekst daje największą swobodę.","en":"Text provides maximum freedom."},"high":{"pl":"Ścisły schemat upraszcza integrację z kodem.","en":"A strict schema simplifies code integration."},"tip":{"pl":"Do integracji preferuj JSON Schema ze strict: true, jeśli dostępne.","en":"Prefer JSON Schema with strict: true when supported."}},{"name":"tool_choice","group":"control","range":"auto · required · none · specific","intro":{"pl":"Kontroluje, czy i jakie narzędzie model może wywołać.","en":"Controls whether and which tool the model may call."},"detail":{"pl":"Auto pozostawia decyzję modelowi, required wymaga narzędzia, none je blokuje, a wybór konkretnej funkcji wymusza określoną ścieżkę.","en":"Auto lets the model decide, required forces a tool, none blocks tools, and choosing a function enforces a specific path."},"low":{"pl":"Więcej autonomii w trybie auto.","en":"More autonomy in auto mode."},"high":{"pl":"Większa kontrola przy wymuszeniu.","en":"More control when forced."},"tip":{"pl":"Wymuszaj tylko, gdy odpowiedź bez narzędzia byłaby błędna.","en":"Force only when answering without the tool would be wrong."}},{"name":"parallel_tool_calls","group":"control","range":"boolean","intro":{"pl":"Pozwala wykonywać niezależne wywołania narzędzi równolegle.","en":"Allows independent tool calls to run in parallel."},"detail":{"pl":"Skraca czas, gdy potrzeba kilku niezależnych źródeł. Nie pasuje do kroków zależnych, w których jeden wynik jest wejściem następnego.","en":"Reduces latency for independent sources. It does not suit dependent steps where one result feeds the next."},"low":{"pl":"Sekwencyjnie: prostsze zależności.","en":"Sequential: simpler dependencies."},"high":{"pl":"Równolegle: krótsze opóźnienie.","en":"Parallel: lower latency."},"tip":{"pl":"Projektuj funkcje tak, aby można je było bezpiecznie ponowić i uruchomić jednocześnie.","en":"Design functions so they can be retried safely and run at the same time."}},{"name":"stream","group":"control","range":"boolean","intro":{"pl":"Przesyła fragmenty odpowiedzi w miarę ich powstawania.","en":"Delivers chunks as the response is generated."},"detail":{"pl":"Nie musi skrócić całego generowania, ale poprawia odczuwalną szybkość. Klient musi obsłużyć częściowe dane, błędy w połowie i końcowe statystyki.","en":"May not reduce total generation time, but improves perceived speed. Clients must handle partial data, mid-stream errors, and final usage."},"low":{"pl":"Pełna odpowiedź naraz, co upraszcza obsługę.","en":"One complete response simplifies handling."},"high":{"pl":"Pierwsze tokeny szybciej widoczne.","en":"First tokens become visible sooner."},"tip":{"pl":"Nie parsuj niepełnego JSON-u jako gotowego dokumentu.","en":"Do not parse incomplete JSON as a finished document."}}],"GUIDE":{"temperature":{"range":{"pl":"0–2 (typowo 0–1)","en":"0–2 (commonly 0–1)"},"intro":{"pl":"Ustala, jak chętnie model wybiera mniej oczywiste kolejne fragmenty tekstu.","en":"Controls how readily the model chooses less obvious next pieces of text."},"detail":{"pl":"Przy tworzeniu odpowiedzi model za każdym razem porównuje kilka możliwych dalszych ciągów. Niska wartość parametru temperature mocniej premiuje opcję o najwyższej szansie, dlatego kolejne próby są zwykle podobne. Wyższa wartość wyrównuje szanse między opcjami i zwiększa różnorodność. Może to pomóc w burzy mózgów, ale zwiększa też ryzyko dygresji, sprzeczności i błędnego formatu. Zmiana tego parametru nie dodaje modelowi wiedzy i nie naprawia niejasnej instrukcji.","en":"While writing a response, the model repeatedly compares several possible continuations. A low temperature strongly favors the most likely option, so repeated runs tend to look similar. A higher value makes the options more evenly matched and increases variety. This can help with brainstorming, but it also raises the risk of digressions, contradictions, and formatting mistakes. Temperature does not add knowledge or repair an unclear instruction."},"impact":{"pl":"Sama zmiana wartości temperature zwykle niemal nie wpływa na szybkość pojedynczego kroku modelu. Czas i koszt zmienią się głównie wtedy, gdy bardziej swobodna odpowiedź okaże się dłuższa. Największa różnica dotyczy jakości: niska wartość daje stabilność, a wysoka większą różnorodność.","en":"Changing temperature usually has almost no effect on the speed of a single model step. Time and cost change mainly if a freer response becomes longer. The main tradeoff is quality: low values favor consistency, while high values favor variety."}},"top_p":{"range":{"pl":"0–1","en":"0–1"},"intro":{"pl":"Ogranicza wybór do grupy najbardziej prawdopodobnych kolejnych tokenów.","en":"Limits selection to a group of the most likely next tokens."},"detail":{"pl":"Model ustawia możliwe kolejne tokeny od najbardziej do najmniej prawdopodobnego. Przy wartości top_p = 0,9 zachowuje najmniejszą grupę, której szanse sumują się do co najmniej 90%. Gdy model jest pewny, w tej grupie może być tylko kilka tokenów; gdy jest niepewny, grupa będzie większa. Odrzucone tokeny nie mogą zostać wybrane, a szanse pozostałych są przeliczane tak, aby znów sumowały się do 100%. To odróżnia top_p od temperature: temperature płynnie zmienia proporcje między wszystkimi opcjami, a top_p stawia ruchomą granicę i usuwa opcje znajdujące się poza nią.","en":"The model orders possible next tokens from most to least likely. With top_p = 0.9, it keeps the smallest group whose probabilities add up to at least 90%. When the model is confident, that group may contain only a few tokens; when it is uncertain, the group will be larger. Removed tokens cannot be selected, and the remaining probabilities are recalculated to total 100% again. This is the key difference from temperature: temperature smoothly changes the balance among all options, while top_p draws a moving boundary and removes the options beyond it."},"impact":{"pl":"Samo ograniczenie liczby dostępnych opcji zwykle nie przyspiesza zauważalnie odpowiedzi, ponieważ model wykonuje większość pracy przed tym wyborem. Niższe top_p daje bardziej zachowawczy tekst, a wyższe pozostawia więcej swobody. Wpływ na czas i koszt jest zwykle pośredni i wynika ze zmiany długości odpowiedzi.","en":"Limiting the candidate group usually does not make the response noticeably faster because most work happens before that choice. A lower top_p produces more conservative text, while a higher value leaves more freedom. Time and cost are affected mostly indirectly through output length."}},"top_k":{"range":{"pl":"liczba całkowita ≥ 1","en":"integer ≥ 1"},"intro":{"pl":"Pozwala wybierać tylko spośród k najbardziej prawdopodobnych kolejnych tokenów.","en":"Allows selection only from the k most likely next tokens."},"detail":{"pl":"Przy top_k = 10 model bierze pod uwagę dokładnie dziesięć najbardziej prawdopodobnych opcji na każdym kroku. Przy top_k = 1 zawsze wybiera opcję z najwyższą szansą. W przeciwieństwie do top_p liczba dostępnych opcji jest stała, niezależnie od tego, czy model jest pewny odpowiedzi. Małe k ogranicza niespodzianki, a duże k dopuszcza rzadsze i bardziej ryzykowne wybory. Parametr jest popularny w systemach uruchamianych samodzielnie, ale nie należy do standardowych parametrów OpenAI API.","en":"With top_k = 10, the model considers exactly the ten most likely options at every step. With top_k = 1, it always selects the most likely option. Unlike top_p, the number of available choices stays fixed whether the model is confident or uncertain. A small k limits surprises, while a large k admits rarer and riskier choices. The parameter is common in software used to run models yourself, but it is not a standard OpenAI API parameter."},"impact":{"pl":"W niektórych systemach mniejsze k nieznacznie upraszcza końcowy wybór, ale zwykle nie skraca wyraźnie czasu całej odpowiedzi. Najważniejszy jest wpływ na styl i jakość: niskie k zwiększa przewidywalność, a wysokie k różnorodność oraz ryzyko słabszych sformułowań.","en":"In some systems, a smaller k slightly simplifies the final choice, but it rarely shortens the whole response by much. The main effect is on style and quality: low k improves predictability, while high k increases variety and the risk of weaker wording."}},"max_output_tokens":{"range":{"pl":"zależny od modelu","en":"model-specific"},"intro":{"pl":"Ustawia maksymalną liczbę tokenów, które model może wygenerować.","en":"Sets the maximum number of tokens the model may generate."},"detail":{"pl":"To górny limit, a nie zamówiona długość odpowiedzi. Model może zakończyć tekst wcześniej, jeśli uzna odpowiedź za kompletną. Zbyt niski limit może urwać zdanie, kod lub dokument JSON przed końcem. W modelach rozumujących limit może obejmować zarówno pracę wewnętrzną, jak i tekst widoczny dla użytkownika. Nazwa podobnego parametru różni się między API; można spotkać na przykład max_completion_tokens.","en":"This is an upper limit, not a requested response length. The model may stop earlier when it considers the answer complete. A limit that is too low can cut off a sentence, code block, or JSON document. In reasoning models, the limit may cover both internal work and text visible to the user. Similar limits may use different names across APIs, such as max_completion_tokens."},"impact":{"pl":"To jeden z parametrów najsilniej wpływających na maksymalny czas i koszt. Niższy limit oszczędza tokeny tylko wtedy, gdy odpowiedź rzeczywiście by go przekroczyła. Zbyt agresywne ograniczenie obniża jakość, ponieważ użytkownik może otrzymać niepełny wynik.","en":"This is one of the strongest controls over maximum time and cost. A lower limit saves tokens only when the response would otherwise exceed it. An aggressive limit hurts quality because the user may receive an incomplete result."}},"stop":{"range":{"pl":"tekst lub lista tekstów","en":"text or list of texts"},"intro":{"pl":"Kończy odpowiedź, gdy model wygeneruje wskazany ciąg znaków.","en":"Ends the response when the model generates a specified text sequence."},"detail":{"pl":"Możesz podać jeden lub kilka znaczników końca, na przykład \u003cEND> albo nagłówek rozpoczynający kolejny rekord. Gdy model wygeneruje taki ciąg, API zatrzymuje dalsze tworzenie tekstu. Sam znacznik zwykle nie trafia do zwróconej odpowiedzi, choć zachowanie zależy od dostawcy. Dopasowanie jest dosłowne, dlatego zwykłe słowo może przypadkowo przerwać poprawną odpowiedź. Najbezpieczniejsze są charakterystyczne znaczniki, które nie występują naturalnie w treści.","en":"You can provide one or more end markers, such as \u003cEND> or a heading that starts the next record. When the model generates one of them, the API stops producing more text. The marker itself is usually omitted from the returned response, although behavior varies by provider. Matching is literal, so an ordinary word may accidentally stop a valid answer. Distinctive markers that do not occur naturally in the content are safest."},"impact":{"pl":"Jeśli znacznik pojawi się wcześniej niż naturalny koniec, zmniejszy liczbę tokenów, czas i koszt. Jeśli nie pojawi się wcale, wpływ na szybkość jest pomijalny. Źle dobrany znacznik może jednak obniżyć jakość przez przedwczesne zakończenie.","en":"If the marker appears before the natural ending, it reduces tokens, time, and cost. If it never appears, the speed impact is negligible. A poorly chosen marker can hurt quality by ending the answer too soon."}},"frequency_penalty":{"range":{"pl":"często −2 do 2","en":"often −2 to 2"},"intro":{"pl":"Zmniejsza szansę ponownego użycia fragmentu tym mocniej, im częściej już się pojawił.","en":"Reduces the chance of reusing a piece of text more strongly each time it has already appeared."},"detail":{"pl":"Parametr zlicza wcześniejsze użycia tokenu w bieżącej odpowiedzi. Pierwsze powtórzenie jest ograniczane lekko, a kolejne coraz mocniej. Pomaga, gdy model uporczywie powtarza tę samą frazę, punkt listy lub konstrukcję zdania. Nie blokuje powtórzeń całkowicie, więc potrzebne słowa nadal mogą wracać. Zbyt wysoka wartość sprawia, że model na siłę szuka synonimów i tekst zaczyna brzmieć nienaturalnie.","en":"The parameter counts how often a token has already appeared in the current response. The first repetition is discouraged slightly, and later repetitions more strongly. It helps when the model keeps repeating the same phrase, list item, or sentence pattern. It does not ban repetition completely, so necessary words may still return. A value that is too high makes the model force synonyms and can make the text sound unnatural."},"impact":{"pl":"Dodatkowa praca jest niewielka i zwykle nie wpływa zauważalnie na szybkość. Dobrze dobrana wartość może skrócić zapętloną odpowiedź i poprawić czytelność. Zbyt wysoka wartość obniża jakość języka, nawet jeśli powtórzeń jest mniej.","en":"The extra calculation is small and usually has no noticeable speed impact. A well-chosen value can shorten a looping response and improve readability. A value that is too high reduces language quality even if repetition decreases."}},"presence_penalty":{"range":{"pl":"często −2 do 2","en":"often −2 to 2"},"intro":{"pl":"Zmniejsza szansę użycia fragmentu już po jego pierwszym pojawieniu się.","en":"Reduces the chance of reusing a piece of text after it appears once."},"detail":{"pl":"W przeciwieństwie do frequency_penalty nie ma znaczenia, czy dany token pojawił się raz, czy wiele razy. Liczy się tylko to, że został już użyty. Dodatnia wartość zachęca model do wprowadzania nowych słów i tematów. Może to pomóc w tworzeniu różnorodnych pomysłów, ale może też odciągać odpowiedź od głównego wątku. Ujemna wartość sprzyja utrzymaniu tego samego słownictwa i tematu.","en":"Unlike frequency_penalty, it does not matter whether a token appeared once or many times. What matters is simply that it appeared before. A positive value encourages new words and topics. This can help produce diverse ideas, but it may also pull the response away from its main subject. A negative value favors consistent vocabulary and focus."},"impact":{"pl":"Dodatkowa praca modelu jest zwykle pomijalna. Parametr wpływa przede wszystkim na kierunek odpowiedzi: wyższa wartość zwiększa różnorodność, ale może pogorszyć spójność. Nie gwarantuje krótszej ani szybszej odpowiedzi.","en":"The compute cost is usually negligible. The parameter mainly changes the direction of the response: a higher value increases variety but may reduce coherence. It does not guarantee a shorter or faster answer."}},"repetition_penalty":{"range":{"pl":"zależny od systemu","en":"system-specific"},"intro":{"pl":"Ogranicza powtarzanie wcześniejszych fragmentów według zasad danego systemu.","en":"Reduces repetition of earlier text according to rules defined by the serving system."},"detail":{"pl":"To popularne ustawienie w narzędziach do samodzielnego uruchamiania modeli. Dokładny sposób działania, zakres i wartość neutralna zależą od używanego systemu; często wartością neutralną jest 1,0. Parametr może brać pod uwagę zarówno instrukcję, jak i już wygenerowaną odpowiedź. Nie jest bezpośrednim odpowiednikiem frequency_penalty ani presence_penalty. Przed użyciem trzeba sprawdzić dokumentację konkretnego modelu i programu.","en":"This setting is common in tools used to run models yourself. Its exact behavior, range, and neutral value depend on the serving system; 1.0 is often neutral. It may consider both the prompt and the text already generated. It is not a direct replacement for frequency_penalty or presence_penalty. Check the documentation for the specific model and software before using it."},"impact":{"pl":"Narzut na szybkość jest zwykle niewielki. Ograniczenie zapętleń może skrócić błędną odpowiedź i oszczędzić tokeny. Zbyt silna kara pogarsza płynność, gramatykę i poprawność tekstu.","en":"The speed overhead is usually small. Preventing loops can shorten a broken response and save tokens. An excessive penalty hurts fluency, grammar, and correctness."}},"reasoning.effort":{"range":{"pl":"poziomy zależne od modelu","en":"model-specific levels"},"intro":{"pl":"Określa, ile pracy model może przeznaczyć na rozwiązanie problemu przed udzieleniem odpowiedzi i w jej trakcie.","en":"Controls how much work the model may spend solving a problem before and while answering."},"detail":{"pl":"Wyższy poziom daje modelowi więcej przestrzeni na analizę kilku możliwości, sprawdzenie założeń i zaplanowanie kolejnych kroków. Najczęściej pomaga w trudnym kodzie, matematyce, analizie i zadaniach wieloetapowych. Nie oznacza automatycznie dłuższej odpowiedzi widocznej dla użytkownika; za jej szczegółowość odpowiada osobne ustawienie verbosity. Dostępne poziomy różnią się między modelami. W modelach rozumujących praca wewnętrzna zużywa tokeny i jest uwzględniana w koszcie.","en":"A higher level gives the model more room to compare approaches, check assumptions, and plan multiple steps. It is most useful for difficult coding, mathematics, analysis, and multi-step tasks. It does not automatically make the visible answer longer; the separate verbosity setting controls that. Available levels differ across models. In reasoning models, internal work uses tokens and contributes to cost."},"impact":{"pl":"Wpływ na czas i koszt jest bezpośredni i może być duży. Wyższy poziom może poprawić jakość trudnych zadań, ale przy prostym pytaniu często tylko wydłuża oczekiwanie. Warto zaczynać od niższego poziomu i podnosić go dopiero wtedy, gdy wyniki są zbyt słabe.","en":"The effect on time and cost is direct and can be substantial. Higher effort may improve difficult tasks, but for a simple question it often only increases the wait. Start lower and raise it only when measured results are not good enough."}},"verbosity":{"range":{"pl":"low · medium · high","en":"low · medium · high"},"intro":{"pl":"Steruje długością i szczegółowością odpowiedzi widocznej dla użytkownika.","en":"Controls the length and detail of the answer visible to the user."},"detail":{"pl":"Niska wartość zachęca do krótkiej odpowiedzi z niewielką liczbą wyjaśnień. Wysoka wartość daje więcej kontekstu, przykładów i uzasadnień. Nie jest to ustawienie inteligencji modelu ani głębokości jego pracy. Można więc połączyć wysoki reasoning effort z krótką, konkretną odpowiedzią. Maksymalny limit tokenów nadal ma pierwszeństwo i może przerwać nawet bardzo szczegółową odpowiedź.","en":"A low value encourages a short answer with few explanations. A high value adds context, examples, and rationale. It is not a control for model intelligence or reasoning depth. You can therefore combine high reasoning effort with a short, direct response. The maximum token limit still takes priority and may cut off a highly detailed answer."},"impact":{"pl":"Wyższa wartość zwykle oznacza więcej widocznych tokenów, a więc dłuższy czas generowania i wyższy koszt. Niska wartość przyspiesza odpowiedź, jeśli krótka forma wystarcza. Zbyt duże skrócenie może jednak usunąć potrzebne wyjaśnienia.","en":"A higher value usually means more visible tokens, longer generation time, and greater cost. A low value speeds up the answer when a short format is sufficient. Too much brevity can remove explanations the user needs."}},"seed":{"range":{"pl":"liczba całkowita","en":"integer"},"intro":{"pl":"Ustawia liczbę początkową używaną przez mechanizm losowego wyboru.","en":"Sets the starting number used by the random selection process."},"detail":{"pl":"Gdy model, instrukcja i wszystkie pozostałe parametry są takie same, ten sam seed zwiększa szansę na podobny wynik. Jest przydatny podczas testów, porównywania zmian i odtwarzania błędu. Nie daje jednak pełnej gwarancji identycznej odpowiedzi, ponieważ dostawca może zmienić model lub sposób jego uruchamiania. Wartość seed nie ma skali jakości. Większa liczba nie oznacza odpowiedzi lepszej, dokładniejszej ani bardziej losowej.","en":"When the model, instruction, and all other settings are identical, the same seed increases the chance of a similar result. It is useful for tests, comparisons, and reproducing a problem. It does not guarantee an identical answer because the provider may change the model or serving system. Seed has no quality scale. A larger number is not better, more accurate, or more random."},"impact":{"pl":"Sam seed nie ma istotnego wpływu na szybkość ani koszt. Może prowadzić do odpowiedzi o innej długości, ale jest to skutek innej ścieżki losowania, a nie rozmiaru liczby. Jego główną wartością jest łatwiejsze testowanie.","en":"Seed itself has no meaningful effect on speed or cost. It may lead to an answer of a different length, but that comes from a different random path, not from the size of the number. Its main benefit is easier testing."}},"n":{"range":{"pl":"liczba całkowita ≥ 1","en":"integer ≥ 1"},"intro":{"pl":"Określa, ile pełnych wariantów odpowiedzi ma powstać dla jednego polecenia.","en":"Sets how many complete answer variants should be generated for one request."},"detail":{"pl":"Przy n = 1 otrzymujesz jedną odpowiedź. Wyższa wartość przydaje się w burzy mózgów, tworzeniu kilku propozycji albo automatycznym wyborze najlepszego wariantu. Sama liczba odpowiedzi nie poprawia jakości, jeśli aplikacja nie potrafi ich później porównać. Każdy wariant zużywa własne tokeny wyjściowe. Nie wszystkie modele i API udostępniają ten parametr.","en":"With n = 1, you receive one answer. Higher values are useful for brainstorming, producing several options, or automatically choosing the best candidate. More answers do not improve quality unless the application can compare them afterward. Each candidate consumes its own output tokens. Not every model or API exposes this parameter."},"impact":{"pl":"Łączny koszt rośnie wraz z sumą tokenów we wszystkich wariantach. System może tworzyć je częściowo razem, więc czas oczekiwania nie zawsze rośnie dokładnie n razy, ale zwykle jest dłuższy. Korzyść jakościowa pojawia się dopiero po dobrym wyborze najlepszego wariantu.","en":"Total cost grows with the combined tokens across all candidates. A system may generate them partly together, so the wait does not always grow exactly n times, but it is usually longer. The quality benefit appears only when the best candidate is selected well."}},"logprobs":{"range":{"pl":"włączone / wyłączone lub liczba opcji","en":"on / off or option count"},"intro":{"pl":"Zwraca dodatkowe liczby pokazujące, jak prawdopodobne były wybrane tokeny i ich alternatywy.","en":"Returns extra numbers showing how likely the selected tokens and their alternatives were."},"detail":{"pl":"Dla każdego wygenerowanego tokenu można otrzymać jego wynik oraz wyniki kilku innych możliwości rozważanych przez model. Pomaga to w klasyfikacji, analizie nietypowych odpowiedzi i sprawdzaniu, czy dwie opcje miały podobne szanse. Wartości są zapisane w formie wygodnej do obliczeń, dlatego nie wyglądają jak zwykłe procenty. Nie wolno ich traktować jako pewności, że całe zdanie jest prawdziwe. Model może być bardzo zdecydowany i nadal podać błędną informację.","en":"For each generated token, you can receive its score and the scores of several alternatives considered by the model. This helps with classification, investigating unusual answers, and checking whether two options had similar chances. The values use a form convenient for computation, so they do not look like ordinary percentages. They must not be treated as confidence that the whole sentence is true. A model can be very decisive and still provide incorrect information."},"impact":{"pl":"Wygenerowany tekst zwykle się nie zmienia, ale odpowiedź API zawiera więcej danych. Narzut na obliczenia i przesyłanie jest mały dla kilku opcji, lecz rośnie wraz z długością tekstu i liczbą zwracanych alternatyw. Korzyść jakościowa pojawia się dopiero wtedy, gdy aplikacja wykorzysta te dane.","en":"The generated text usually does not change, but the API response contains more data. Compute and transfer overhead is small for a few options, but grows with output length and the number of alternatives returned. A quality benefit appears only when the application uses the data."}},"logit_bias":{"range":{"pl":"ID tokenu → zmiana szansy","en":"token ID → probability adjustment"},"intro":{"pl":"Zwiększa lub zmniejsza szansę wybranych tokenów przed utworzeniem kolejnego fragmentu odpowiedzi.","en":"Raises or lowers the chance of selected tokens before the next piece of the answer is generated."},"detail":{"pl":"Mimo technicznej nazwy zasada jest prosta: wskazujesz identyfikator tokenu i określasz, czy model ma go preferować, czy unikać. Wartość dodatnia zwiększa jego szansę, a ujemna ją zmniejsza. Skrajne wartości mogą token prawie wymusić albo praktycznie zablokować. Trzeba uważać, ponieważ jedno słowo może składać się z kilku tokenów, a spacja lub wielka litera może zmienić ich identyfikatory. To narzędzie do precyzyjnej kontroli, a nie sposób na dodanie modelowi wiedzy.","en":"Despite the technical name, the idea is simple: provide a token ID and tell the model to prefer or avoid it. A positive value raises its chance, while a negative value lowers it. Extreme values can nearly force or effectively block the token. Take care because one word may consist of several tokens, and a space or capital letter may change their IDs. This is a precision control, not a way to add knowledge to the model."},"impact":{"pl":"Sama korekta wybranych tokenów zwykle prawie nie wpływa na szybkość. Skrajne ustawienia mogą jednak prowadzić do powtórzeń, dziwnych zdań lub dłuższej odpowiedzi, co pośrednio zwiększa czas i koszt. Jakość rośnie tylko wtedy, gdy dokładnie rozumiesz, które tokeny zmieniasz.","en":"Adjusting selected tokens usually has almost no speed impact. Extreme settings can create repetition, awkward sentences, or longer output, indirectly increasing time and cost. Quality improves only when you understand exactly which tokens you are changing."}},"response_format":{"range":{"pl":"tekst · JSON · JSON Schema","en":"text · JSON · JSON Schema"},"intro":{"pl":"Określa, czy odpowiedź ma być zwykłym tekstem, poprawnym JSON-em czy danymi zgodnymi z ustaloną strukturą.","en":"Specifies whether the answer should be plain text, valid JSON, or data that follows a defined structure."},"detail":{"pl":"Zwykły tekst daje modelowi największą swobodę. Tryb JSON pilnuje poprawnego zapisu danych, ale nie gwarantuje obecności właściwych pól. JSON Schema opisuje wymagane pola, ich typy i dozwolone wartości, dzięki czemu aplikacja może bezpieczniej odczytać wynik. Jest to szczególnie przydatne przy wyciąganiu danych i łączeniu modelu z kodem. Nazwa ustawienia zależy od API; w Responses API podobną rolę pełni text.format.","en":"Plain text gives the model the most freedom. JSON mode ensures valid data syntax, but it does not guarantee the correct fields. JSON Schema defines required fields, their types, and allowed values, making the result safer for an application to read. This is especially useful for data extraction and software integrations. The setting name depends on the API; in the Responses API, text.format serves a similar role."},"impact":{"pl":"Sprawdzanie struktury może dodać niewielki narzut, zależny od dostawcy i złożoności zasad. Zwykle oszczędza jednak czas całego procesu, ponieważ ogranicza błędne formaty, poprawki i ponowne zapytania. Ścisła struktura poprawia niezawodność danych, ale zmniejsza swobodę wypowiedzi.","en":"Enforcing a structure may add small provider-dependent overhead, especially for complex rules. It often saves time across the whole workflow by reducing formatting errors, repairs, and retries. A strict structure improves data reliability but reduces expressive freedom."}},"tool_choice":{"range":{"pl":"auto · required · none · konkretne narzędzie","en":"auto · required · none · specific tool"},"intro":{"pl":"Kontroluje, czy model może skorzystać z narzędzia, na przykład wyszukiwarki, bazy danych lub funkcji aplikacji.","en":"Controls whether the model may use a tool such as search, a database, or an application function."},"detail":{"pl":"W trybie auto model sam decyduje, czy narzędzie jest potrzebne. Wartość required wymaga użycia narzędzia, none całkowicie je blokuje, a wskazanie konkretnej funkcji wymusza właśnie tę drogę. Narzędzia są potrzebne, gdy odpowiedź zależy od aktualnych danych albo działania poza samym modelem. Nie warto wymuszać ich bez potrzeby, ponieważ każde wywołanie dodaje kolejny krok i może się nie udać. Najlepszy wybór zależy od tego, czy ważniejsza jest szybkość, czy dostęp do wiarygodnych danych zewnętrznych.","en":"In auto mode, the model decides whether a tool is needed. Required forces tool use, none blocks tools, and naming a specific function forces that path. Tools are useful when the answer depends on current data or an action outside the model itself. Do not force them without a reason because every call adds another step and may fail. The best choice depends on whether speed or access to reliable external data matters more."},"impact":{"pl":"Brak narzędzi jest najszybszy, jeśli model może odpowiedzieć samodzielnie. Użycie narzędzia dodaje czas jego uruchomienia, przesłania wyniku i dalszej pracy modelu. Może jednak zdecydowanie poprawić jakość oraz aktualność odpowiedzi.","en":"No tool use is fastest when the model can answer on its own. A tool adds execution time, result transfer, and another model step. It can still improve answer quality and freshness substantially."}},"parallel_tool_calls":{"range":{"pl":"true / false","en":"true / false"},"intro":{"pl":"Pozwala uruchamiać kilka niezależnych narzędzi w tym samym czasie.","en":"Allows several independent tools to run at the same time."},"detail":{"pl":"Ustawienie pomaga wtedy, gdy wyniki nie zależą od siebie, na przykład podczas jednoczesnego sprawdzania pogody w kilku miastach. Nie pasuje do procesu, w którym wynik pierwszego kroku jest potrzebny do rozpoczęcia drugiego. Równoległe wywołania skracają oczekiwanie, ale utrudniają obsługę błędów i łączenie wyników. Funkcje powinny być bezpieczne przy ponownym uruchomieniu i nie mogą przypadkowo nadpisywać sobie danych. Dostępność parametru zależy od modelu i API.","en":"This helps when results do not depend on one another, such as checking weather in several cities at once. It does not fit a process where the first result is needed to begin the second step. Parallel calls shorten the wait but make error handling and result merging more complex. Functions should be safe to retry and should not accidentally overwrite one another's data. Availability depends on the model and API."},"impact":{"pl":"Przy niezależnych narzędziach czas oczekiwania zbliża się do czasu najwolniejszego wywołania zamiast sumy wszystkich czasów. Łączna ilość pracy i koszt zwykle nie maleją. Przy źle dobranych krokach równoległość może prowadzić do błędów lub powtórzeń.","en":"For independent tools, the wait approaches the duration of the slowest call instead of the sum of every call. Total work and cost usually do not decrease. With poorly chosen steps, parallel execution can create errors or duplication."}},"stream":{"range":{"pl":"true / false","en":"true / false"},"intro":{"pl":"Pokazuje odpowiedź fragmentami już w trakcie jej tworzenia.","en":"Shows the answer in pieces while it is still being generated."},"detail":{"pl":"Gdy stream jest wyłączony, aplikacja czeka na gotową odpowiedź i wyświetla ją dopiero na końcu. Po włączeniu tej opcji model przesyła kolejne fragmenty na bieżąco, podobnie jak podczas pisania wiadomości na czacie. Użytkownik szybciej widzi początek, chociaż pełna odpowiedź zwykle powstaje w podobnym czasie. Aplikacja musi umieć połączyć fragmenty, obsłużyć błąd w połowie i zaczekać na końcowe informacje o wykorzystaniu. Niepełnego JSON-u nie należy traktować jako gotowego dokumentu.","en":"Without streaming, the application waits for the complete answer and displays it only at the end. With streaming enabled, the model sends successive pieces as they are produced, similar to text appearing in a chat. The user sees the beginning sooner even though the full answer usually takes about the same time. The application must join the pieces, handle a mid-response error, and wait for final usage information. Incomplete JSON must not be treated as a finished document."},"impact":{"pl":"Streaming zwykle nie zmniejsza liczby tokenów ani całkowitego czasu pracy modelu. Znacznie poprawia jednak odczuwalną szybkość, bo pierwsze fragmenty pojawiają się wcześniej. Jakość treści pozostaje taka sama, a dodatkowy koszt przesyłania jest zazwyczaj niewielki.","en":"Streaming usually does not reduce token count or total model time. It greatly improves perceived speed because the first pieces appear earlier. Content quality stays the same, and the extra transfer overhead is usually small."}}},"GUIDANCE":{"temperature":{"low":{"pl":"Bardziej stabilne i powtarzalne odpowiedzi; zwykle lepsze dla kodu oraz wyciągania danych.","en":"More stable and repeatable answers; usually better for code and data extraction."}},"top_k":{"low":{"pl":"Bardzo przewidywalny wybór słów i mniej niespodzianek.","en":"Very predictable wording with fewer surprises."},"high":{"pl":"Więcej możliwych słów na każdym kroku i większa różnorodność.","en":"More possible words at each step and greater variety."},"tip":{"pl":"Sprawdź dokumentację programu, w którym uruchamiasz model, ponieważ zakres i wartość wyłączająca mogą się różnić.","en":"Check the documentation for the software running the model because the range and disabled value may differ."}},"stop":{"high":{"pl":"Więcej znaczników daje większą kontrolę, ale zwiększa ryzyko przypadkowego zatrzymania.","en":"More markers add control but increase the chance of an accidental stop."},"tip":{"pl":"Używaj charakterystycznych znaczników końca zamiast popularnych słów.","en":"Use distinctive end markers instead of common words."}},"repetition_penalty":{"low":{"pl":"Tekst pozostaje bardziej naturalny, ale powtórzenia są ograniczane słabiej.","en":"Text stays more natural, but repetition is reduced less strongly."},"high":{"pl":"Mniej powtórzeń, ale większe ryzyko nienaturalnego stylu.","en":"Less repetition, but a greater risk of unnatural wording."},"tip":{"pl":"Najpierw sprawdź, która wartość jest neutralna w używanym programie.","en":"First check which value is neutral in the software you use."}},"seed":{"low":{"pl":"Różne wartości mogą prowadzić do różnych, ale równie poprawnych odpowiedzi.","en":"Different values may lead to different but equally valid answers."}},"logprobs":{"low":{"pl":"Mniej dodatkowych danych w odpowiedzi API.","en":"Less additional data in the API response."},"high":{"pl":"Więcej informacji o opcjach rozważanych przez model.","en":"More information about the options considered by the model."},"tip":{"pl":"Przed podjęciem automatycznej decyzji porównaj te wartości na zestawie przykładów ze znanymi odpowiedziami.","en":"Before making an automated decision, compare these values on examples with known answers."}},"logit_bias":{"low":{"pl":"Wartości ujemne zmniejszają szansę wskazanego tokenu.","en":"Negative values reduce the chance of the selected token."},"high":{"pl":"Wartości dodatnie zwiększają szansę wskazanego tokenu.","en":"Positive values increase the chance of the selected token."},"tip":{"pl":"Sprawdź wszystkie tokeny składające się na słowo, także warianty ze spacją i wielką literą.","en":"Check every token that forms the word, including variants with a leading space or capital letter."}},"response_format":{"low":{"pl":"Zwykły tekst daje największą swobodę wypowiedzi.","en":"Plain text gives the answer the most freedom."},"high":{"pl":"Dokładnie opisana struktura ułatwia bezpieczne użycie wyniku w aplikacji.","en":"A precisely defined structure makes the result safer to use in software."},"tip":{"pl":"Jeśli aplikacja oczekuje konkretnych pól, użyj JSON Schema zamiast samego trybu JSON.","en":"If the application expects specific fields, use JSON Schema instead of JSON mode alone."}},"parallel_tool_calls":{"low":{"pl":"Kroki wykonywane po kolei są prostsze, gdy zależą od wcześniejszych wyników.","en":"Sequential steps are simpler when they depend on earlier results."},"high":{"pl":"Niezależne kroki wykonywane jednocześnie skracają czas oczekiwania.","en":"Independent steps running together shorten the wait."},"tip":{"pl":"Uruchamiaj równolegle tylko te funkcje, które nie potrzebują wyników pozostałych i są bezpieczne przy ponownej próbie.","en":"Run functions in parallel only when they do not need one another's results and are safe to retry."}},"stream":{"tip":{"pl":"Nie traktuj częściowo przesłanego JSON-u jako gotowego dokumentu.","en":"Do not treat partially streamed JSON as a finished document."}}},"EXAMPLES":{"temperature":{"pl":"Dla zdania „Stolicą Francji jest…” model przypisuje kolejnym opcjom szanse: Paryż 70%, Lyon 20%, Nicea 10%. Przy temperature = 0,2 przewaga Paryża jeszcze rośnie, więc odpowiedź jest bardziej przewidywalna. Przy temperature = 1 proporcje pozostają bez zmian. Przy temperature = 1,5 Lyon i Nicea stają się relatywnie bardziej prawdopodobne, co zwiększa różnorodność, ale w tym zadaniu pogarsza rzetelność. Szybkość pojedynczego wyboru pozostaje prawie taka sama.","en":"For the sentence “The capital of France is…”, the model assigns these chances: Paris 70%, Lyon 20%, Nice 10%. At temperature = 0.2, Paris becomes even more dominant, so the answer is more predictable. At temperature = 1, the proportions stay unchanged. At temperature = 1.5, Lyon and Nice become relatively more likely, increasing variety but reducing reliability for this task. The speed of the individual choice remains almost the same."},"top_p":{"pl":"Dla zdania „Kolor nieba to…” możliwe kolejne słowa mają szanse: niebieski 55%, błękitny 25%, szary 12%, fioletowy 5%, zielony 3%. Przy top_p = 0,80 zostają tylko niebieski i błękitny, bo razem dają 80%. Przy top_p = 0,95 dochodzą szary i fioletowy, ponieważ dopiero cztery pierwsze opcje przekraczają próg. Większe top_p dopuszcza więcej odpowiedzi, ale zwykle nie zmienia zauważalnie szybkości.","en":"For the sentence “The color of the sky is…”, possible next words have these chances: blue 55%, azure 25%, gray 12%, purple 5%, green 3%. At top_p = 0.80, only blue and azure remain because they total 80%. At top_p = 0.95, gray and purple are added because the first four options are needed to cross the threshold. A larger top_p allows more answers but usually makes no noticeable speed difference."},"top_k":{"pl":"Dla polecenia „Podaj synonim słowa szybki” model rozważa: prędki 55%, sprawny 25%, błyskawiczny 12%, dynamiczny 5%, gwałtowny 3%. Przy top_k = 1 dostępny jest tylko wyraz prędki. Przy top_k = 3 model może wybrać prędki, sprawny albo błyskawiczny. Przy top_k = 5 dostępne są wszystkie opcje, w tym te słabiej pasujące do polecenia. Większe k zwiększa różnorodność, ale czas obliczeń pozostaje prawie taki sam.","en":"For the request “Give a synonym for fast”, the model considers: quick 55%, rapid 25%, swift 12%, speedy 5%, hasty 3%. At top_k = 1, only quick is available. At top_k = 3, the model may choose quick, rapid, or swift. At top_k = 5, every option is available, including weaker matches. A larger k increases variety, while compute time remains almost the same."}},"TOP_P_COMPARISON":{"pl":{"title":"temperature a top_p na tym samym rozkładzie","lead":"Oba parametry zmieniają losowość, ale robią to w zupełnie inny sposób. Poniżej każdy przykład zawiera własny rozkład wejściowy.","rows":[{"label":"Mechanizm","temperature":"Zmienia proporcje między wszystkimi opcjami. Przy wartości temperature większej od zera każdy token zachowuje niezerową szansę, choć może być ona bardzo mała.","topP":"Zachowuje najmniejszy zestaw osiągający próg p. Tokeny poza zestawem dostają dokładnie 0%, a szanse pozostałych są przeliczane tak, aby sumowały się do 100%."},{"label":"Pewny model","temperature":"Początkowe szanse dla zdania „Niebo jest…”: niebieskie 50%, błękitne 25%, szare 15%, jasne 7%, zielone 3%. Przy temperature = 0,5 zmieniają się na około 73%, 18%, 7%, 1% i mniej niż 1%. Wszystkie pięć tokenów nadal może zostać wybrane.","topP":"Początkowe szanse dla zdania „Niebo jest…”: niebieskie 50%, błękitne 25%, szare 15%, jasne 7%, zielone 3%. Przy top_p = 0,75 zostają tylko dwa pierwsze tokeny. Po ponownym przeliczeniu mają około 67% i 33%, a pozostałe trzy dokładnie 0%."},{"label":"Niepewny model","temperature":"Początkowe szanse dla nazwy aplikacji: Nova 30%, Flow 25%, Pulse 20%, Spark 15%, Orbit 10%. Przy temperature = 0,5 zmieniają się na około 40%, 28%, 18%, 10% i 4%. Wszystkie pięć nazw pozostaje dostępnych.","topP":"Początkowe szanse dla nazwy aplikacji: Nova 30%, Flow 25%, Pulse 20%, Spark 15%, Orbit 10%. Przy top_p = 0,75 zostają trzy pierwsze nazwy. Po ponownym przeliczeniu mają około 40%, 33% i 27%, a dwie pozostałe 0%."}],"conclusion":"W praktyce wybierz temperature, gdy chcesz płynnie regulować przewidywalność całego rozkładu. Wybierz top_p, gdy chcesz całkowicie wykluczyć rzadkie opcje z końca listy. Zmieniaj jeden parametr naraz, aby wiedzieć, co rzeczywiście poprawiło wynik."},"en":{"title":"temperature vs top_p on the same distribution","lead":"Both parameters change randomness, but they do so in fundamentally different ways. Each example below includes its own starting distribution.","rows":[{"label":"Mechanism","temperature":"Changes the balance among all options. When temperature is above zero, every token keeps a nonzero probability, even if that probability becomes extremely small.","topP":"Keeps the smallest set that reaches threshold p. Tokens outside the set receive exactly 0%, and the remaining probabilities are recalculated to total 100%."},{"label":"Confident model","temperature":"Starting chances for “The sky is…”: blue 50%, azure 25%, gray 15%, bright 7%, green 3%. At temperature = 0.5, they become about 73%, 18%, 7%, 1%, and less than 1%. All five tokens can still be selected.","topP":"Starting chances for “The sky is…”: blue 50%, azure 25%, gray 15%, bright 7%, green 3%. At top_p = 0.75, only the first two tokens remain. After recalculation, they have about 67% and 33%, while the other three have exactly 0%."},{"label":"Uncertain model","temperature":"Starting chances for an application name: Nova 30%, Flow 25%, Pulse 20%, Spark 15%, Orbit 10%. At temperature = 0.5, they become about 40%, 28%, 18%, 10%, and 4%. All five names remain available.","topP":"Starting chances for an application name: Nova 30%, Flow 25%, Pulse 20%, Spark 15%, Orbit 10%. At top_p = 0.75, the first three names remain. After recalculation, they have about 40%, 33%, and 27%, while the other two have 0%."}],"conclusion":"In practice, choose temperature when you want smooth control over the predictability of the full distribution. Choose top_p when you want to exclude the unlikely tail completely. Change one parameter at a time so you can identify what actually improved the result."}},"GLOSSARY":[{"term":{"pl":"inferencja","en":"inference"},"definition":{"pl":"Moment, w którym gotowy model przetwarza instrukcję i tworzy odpowiedź. Nie jest to uczenie modelu, lecz korzystanie z tego, czego nauczył się wcześniej.","en":"The stage when a trained model processes an instruction and produces an answer. It is model use, not model training."}},{"term":{"pl":"token","en":"token"},"definition":{"pl":"Krótki fragment tekstu przetwarzany przez model. Może być całym słowem, częścią słowa, znakiem interpunkcyjnym lub spacją.","en":"A short piece of text processed by the model. It may be a whole word, part of a word, punctuation, or a space."}},{"term":{"pl":"próbkowanie","en":"sampling"},"definition":{"pl":"Sposób wybierania kolejnego tokenu spośród kilku możliwości. Model bierze pod uwagę przypisane im szanse i wybraną metodę losowania.","en":"The process of choosing the next token from several possibilities using their probabilities and the selected method."}},{"term":{"pl":"rozkład prawdopodobieństwa","en":"probability distribution"},"definition":{"pl":"Lista możliwych kolejnych tokenów wraz z ich szansami. Wszystkie szanse razem sumują się do 100%.","en":"A list of possible next tokens and their probabilities. All probabilities add up to 100%."}},{"term":{"pl":"API","en":"API"},"definition":{"pl":"Sposób komunikacji aplikacji z modelem. Aplikacja wysyła instrukcję i ustawienia, a API zwraca odpowiedź oraz informacje dodatkowe.","en":"A way for an application to communicate with a model. The application sends instructions and settings, and the API returns the answer and related information."}},{"term":{"pl":"JSON","en":"JSON"},"definition":{"pl":"Popularny tekstowy format zapisu danych w postaci pól, list i wartości. Jest łatwy do odczytania przez programy.","en":"A popular text format for storing data as fields, lists, and values. Software can read it easily."}},{"term":{"pl":"JSON Schema","en":"JSON Schema"},"definition":{"pl":"Zestaw reguł opisujących, jakie pola powinny znaleźć się w JSON-ie, jakie mają typy i które wartości są dozwolone.","en":"A set of rules describing which fields a JSON object should contain, their types, and which values are allowed."}},{"term":{"pl":"tokeny rozumowania","en":"reasoning tokens"},"definition":{"pl":"Część budżetu odpowiedzi zużywana przez model na pracę wewnętrzną. Nie jest widoczna jako gotowy tekst, ale może wpływać na czas i koszt.","en":"Part of the response budget used for the model's internal work. It is not shown as finished text, but it can affect time and cost."}},{"term":{"pl":"ID tokenu","en":"token ID"},"definition":{"pl":"Numer przypisany konkretnemu tokenowi. To właśnie tym numerem API wskazuje fragment tekstu w ustawieniach takich jak logit_bias.","en":"A number assigned to a specific token. APIs use this number to identify pieces of text in settings such as logit_bias."}}],"L":{"pl":{"eyebrow":"Praktyczny przewodnik","title":"Parametry inferencji LLM","lead":"Zobacz, jak każde ustawienie wpływa na jakość, szybkość i koszt odpowiedzi. Opisy prowadzą od podstaw i pokazują praktyczne skutki zmian.","chartTitle":"Możliwe kolejne tokeny","chartLabel":"większa szansa","filter":"Filtruj parametry","glossary":"Podstawowe pojęcia","glossaryLead":"Kliknij pojęcie, aby zobaczyć krótkie wyjaśnienie.","all":"Wszystkie","groups":{"sampling":"Próbkowanie","length":"Długość","behavior":"Zachowanie","reasoning":"Rozumowanie","control":"Kontrola"},"low":"Niższa wartość / wyłączone","high":"Wyższa wartość / włączone","range":"Zakres / typowe wartości","impact":"Wpływ na szybkość, koszt i jakość","example":"Przykład","tip":"Dobra praktyka","recipes":"Szybkie konfiguracje","recipeLead":"Potraktuj je jako punkty startowe. Dostępność ustawień zależy od modelu i API.","r1":"Wyciąganie danych i JSON","r2":"Twórcze warianty","r3":"Trudne rozumowanie","note":"Najważniejsza zasada","noteBody":"Najpierw wybierz właściwy model i napisz jasną instrukcję. Parametry pomagają dostroić zachowanie, ale nie uzupełnią brakującego kontekstu, nie naprawią sprzecznych poleceń i nie usuną ograniczeń modelu.","footer":"Nazwy, zakresy i dostępność ustawień różnią się między dostawcami i modelami. Wpływ na szybkość zależy również od systemu obsługującego model oraz obciążenia, dlatego warto mierzyć go we własnym środowisku."},"en":{"eyebrow":"A practical field guide","title":"LLM inference parameters","lead":"See how each setting affects answer quality, speed, and cost. The explanations start with the basics and focus on practical consequences.","chartTitle":"Possible next tokens","chartLabel":"more likely","filter":"Filter parameters","glossary":"Core concepts","glossaryLead":"Select a term to see a short explanation.","all":"All","groups":{"sampling":"Sampling","length":"Length","behavior":"Behavior","reasoning":"Reasoning","control":"Control"},"low":"Lower value / off","high":"Higher value / on","range":"Range / common values","impact":"Speed, cost, and quality impact","example":"Example","tip":"Good practice","recipes":"Quick configurations","recipeLead":"Treat these as starting points. Setting availability depends on the model and API.","r1":"Data extraction and JSON","r2":"Creative variants","r3":"Hard reasoning","note":"The key principle","noteBody":"Choose the right model and write a clear instruction first. Parameters help tune behavior, but they cannot supply missing context, repair conflicting directions, or remove model limitations.","footer":"Names, ranges, and availability vary across providers and models. Speed also depends on the serving system and workload, so measure it in your own environment."}},"R":[{"key":"r1","lines":{"pl":["temperature: 0–0.2","n: 1","response_format: JSON Schema","verbosity: low"],"en":["temperature: 0–0.2","n: 1","response_format: JSON Schema","verbosity: low"]}},{"key":"r2","lines":{"pl":["temperature: 0.7–1.0","top_p: 1","n: 2–4","presence_penalty: 0–0.5"],"en":["temperature: 0.7–1.0","top_p: 1","n: 2–4","presence_penalty: 0–0.5"]}},{"key":"r3","lines":{"pl":["reasoning.effort: high","verbosity: low–medium","max_output_tokens: z zapasem","temperature: wartość domyślna"],"en":["reasoning.effort: high","verbosity: low–medium","max_output_tokens: leave headroom","temperature: default"]}}]});</script>
+</body>
+</html>
