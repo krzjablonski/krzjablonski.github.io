@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy · Legion Builder</title>
+<meta name="description" content="Legion Builder does not collect, transmit, sell, or share any personal data.">
+<meta name="theme-color" content="#04060A">
+<link rel="canonical" href="https://kjablonski.tech/legion-builder/privacy-policy/">
+<link rel="icon" type="image/png" href="../assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --space: #04060A;
+  --hull: #0A0F16;
+  --seam: #1E2B3A;
+  --seam-b: #2F4459;
+  --text: #E6EDF5;
+  --dim: #97A7BA;
+  --holo: #5FD4F4;
+  --amber: #FFB84D;
+  --green: #4FD99A;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --gutter: clamp(20px, 8.3vw, 120px);
+}
+* { box-sizing: border-box; }
+html { background: var(--space); }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--text);
+  background-color: var(--space);
+  background-image:
+    linear-gradient(rgba(95,212,244,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95,212,244,.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--holo); text-underline-offset: 4px; }
+a:hover { color: #9BE6FA; }
+:focus-visible { outline: 2px solid var(--holo); outline-offset: 4px; }
+.wrap { max-width: 1440px; margin: 0 auto; padding-inline: var(--gutter); }
+.label { font-family: var(--mono); font-weight: 700; font-size: 13px; letter-spacing: .3em; text-transform: uppercase; color: var(--holo); }
+
+.nav { border-bottom: 1px solid var(--seam); background: rgba(4,6,10,.7); }
+.nav .wrap { height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.wordmark { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.wordmark span { font-family: var(--mono); font-weight: 800; font-size: 19px; letter-spacing: .18em; color: var(--text); white-space: nowrap; }
+.wordmark b { color: var(--holo); }
+.back {
+  display: flex; align-items: center; gap: 10px; padding: 14px 0;
+  font-family: var(--mono); font-weight: 600; font-size: 13px; letter-spacing: .24em;
+  color: var(--dim); text-decoration: none; transition: color .2s;
+}
+.back:hover { color: var(--text); }
+.back svg { transition: transform .3s; }
+.back:hover svg { transform: translateX(-3px); }
+
+main { padding-block: 80px 120px; }
+.head { display: flex; flex-direction: column; gap: 24px; max-width: 880px; margin-bottom: 56px; }
+h1 {
+  margin: 0; font-family: var(--mono); font-weight: 800; font-size: clamp(44px, 7vw, 80px);
+  line-height: 1; letter-spacing: -.02em; text-transform: uppercase;
+}
+h1 span { color: var(--holo); text-shadow: 0 0 36px rgba(95,212,244,.4); }
+.amber-bar { width: 72px; height: 8px; background: var(--amber); transform: skewX(-30deg); margin-left: 4px; }
+.meta { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; color: var(--dim); }
+
+.panel {
+  --c: 28px;
+  position: relative; max-width: 880px; padding: 1px; background: var(--seam);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+.panel > .body {
+  background: var(--hull); padding: clamp(28px, 5vw, 56px);
+  clip-path: inherit;
+}
+.panel > svg { position: absolute; pointer-events: none; }
+.panel > .tl { top: 0; left: 0; }
+.panel > .br { bottom: 0; right: 0; }
+
+.summary {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding-bottom: 40px; margin-bottom: 40px; border-bottom: 1px solid var(--seam);
+}
+.summary svg { flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(79,217,154,.45)); }
+.summary p { font-size: 21px; line-height: 1.6; margin: 0; }
+
+section + section { margin-top: 40px; }
+h2 {
+  margin: 0 0 14px; font-family: var(--mono); font-weight: 700; font-size: 15px;
+  letter-spacing: .24em; text-transform: uppercase; color: var(--text);
+  display: flex; align-items: center; gap: 14px;
+}
+h2::before {
+  content: ""; width: 10px; height: 10px; flex-shrink: 0; background: var(--holo);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+}
+section p { margin: 0; max-width: 68ch; font-size: 18px; line-height: 1.7; color: var(--dim); }
+
+footer { border-top: 1px solid var(--seam); background: var(--hull); }
+footer .wrap { padding-block: 40px 48px; display: flex; flex-direction: column; gap: 20px; }
+footer p { margin: 0; max-width: 920px; font-size: 14px; line-height: 1.7; color: var(--dim); }
+footer .label { font-size: 11px; color: var(--dim); }
+
+@media (max-width: 560px) {
+  .nav .wrap { height: 72px; }
+  .wordmark span { font-size: 15px; letter-spacing: .14em; }
+  .wordmark svg { width: 30px; height: 30px; }
+  .back span { display: none; }
+  main { padding-block: 48px 80px; }
+  .summary { flex-direction: column; }
+  .summary p { font-size: 19px; }
+  section p { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="wordmark" href="../" aria-label="Legion Builder home">
+      <svg width="38" height="38" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M24 8H92V76L76 92H8V24Z" fill="none" stroke="#5FD4F4" stroke-width="7"/>
+        <path d="M28 40 50 27 72 40V50L50 37 28 50Z" fill="#5FD4F4"/>
+        <path d="M28 56 50 43 72 56V66L50 53 28 66Z" fill="#5FD4F4"/>
+        <path d="M30 71H74L71 79H27Z" fill="#FFB84D"/>
+      </svg>
+      <span>LEGION <b>BUILDER</b></span>
+    </a>
+    <a class="back" href="../">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      <span>BACK TO APP</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="head">
+    <span class="label">// Legal</span>
+    <h1>Privacy <span>policy.</span></h1>
+    <div class="amber-bar"></div>
+    <span class="meta">EFFECTIVE DATE · 28 SEPTEMBER 2026</span>
+  </div>
+
+  <div class="panel">
+    <div class="body">
+      <div class="summary">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#4FD99A" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.5 4 5.5v6c0 5 3.4 8.8 8 10 4.6-1.2 8-5 8-10v-6z"/>
+          <path d="m8.5 12 2.5 2.5 4.5-5"/>
+        </svg>
+        <p>Legion Builder ("the app") is an offline army list builder for tabletop miniatures games, published by Krzysztof Jablonski.</p>
+      </div>
+
+      <section>
+        <h2>Summary</h2>
+        <p>The app does not collect, transmit, sell, or share any personal data. It has no accounts, no ads, no analytics, and no crash reporting, and it does not request internet access.</p>
+      </section>
+
+      <section>
+        <h2>Data stored on your device</h2>
+        <p>The armies you create are saved in a local database on your device. They never leave the device through the app, and the developer has no access to them. Uninstalling the app or clearing its storage deletes them.</p>
+      </section>
+
+      <section>
+        <h2>Device backups</h2>
+        <p>If Android backup is enabled in your device settings, Android may include the app's local data in your personal Google backup. That backup is managed by Google under your Google account settings and is not accessible to the developer.</p>
+      </section>
+
+      <section>
+        <h2>Permissions</h2>
+        <p>The app does not request any runtime permissions.</p>
+      </section>
+
+      <section>
+        <h2>Children</h2>
+        <p>The app is not directed at children under 13 and does not knowingly collect any data from anyone.</p>
+      </section>
+
+      <section>
+        <h2>Changes</h2>
+        <p>If this policy changes, the updated version will be posted at this address with a new effective date.</p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>Questions about this policy: <a href="mailto:swlarmybuilder@gmail.com">swlarmybuilder@gmail.com</a></p>
+      </section>
+    </div>
+    <svg class="tl" width="150" height="32" aria-hidden="true"><path d="M1.5 30 L30 1.5 H150" stroke="#5FD4F4" stroke-width="3" fill="none"/></svg>
+    <svg class="br" width="32" height="32" aria-hidden="true"><path d="M1.5 30.5 L30.5 1.5" stroke="#5FD4F4" stroke-opacity=".6" stroke-width="2" fill="none"/></svg>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Legion Builder is an unofficial, fan-made tool. It is not produced, endorsed, or supported by, or affiliated with, Lucasfilm Ltd., Disney, or Atomic Mass Games. Star Wars and related names are trademarks of Lucasfilm Ltd.</p>
+    <span class="label">© 2026 Legion Builder</span>
+  </div>
+</footer>
+</body>
+</html>

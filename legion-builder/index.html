@@ -1,0 +1,834 @@
+<!doctype html>
+<!--
+  Release switches: set to "live" once each download is available.
+    data-play: "soon" shows "Coming soon" instead of the Google Play links.
+    data-apk:  "soon" shows "Coming soon" instead of the direct APK links (downloads/legion-builder.apk).
+-->
+<html lang="en" data-play="soon" data-apk="soon">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legion Builder · Offline army builder for Android</title>
+<meta name="description" content="Build, validate and save Legion army lists and Command Hands, fully offline. No account, no ads, no tracking.">
+<meta name="theme-color" content="#04060A">
+<meta property="og:title" content="Legion Builder">
+<meta property="og:description" content="Build, validate and save Legion army lists and Command Hands, fully offline.">
+<meta property="og:image" content="https://kjablonski.tech/legion-builder/assets/og-image.jpg">
+<meta property="og:url" content="https://kjablonski.tech/legion-builder/">
+<link rel="canonical" href="https://kjablonski.tech/legion-builder/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --space: #04060A;
+  --hull: #0A0F16;
+  --seam: #1E2B3A;
+  --seam-b: #2F4459;
+  --text: #E6EDF5;
+  --dim: #97A7BA;
+  --holo: #5FD4F4;
+  --amber: #FFB84D;
+  --green: #4FD99A;
+  --green-deep: #0E3325;
+  --red: #FF5C61;
+  --red-deep: #3D1417;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --gutter: clamp(20px, 8.3vw, 120px);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--space); }
+body {
+  margin: 0;
+  font-family: var(--sans);
+  color: var(--text);
+  background-color: var(--space);
+  background-image:
+    linear-gradient(rgba(95,212,244,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(95,212,244,.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+main { overflow-x: clip; }
+img { max-width: 100%; }
+a { color: var(--holo); }
+a:hover { color: #9BE6FA; }
+:focus-visible { outline: 2px solid var(--holo); outline-offset: 4px; }
+h1, h2, h3, p { margin: 0; }
+
+.wrap { max-width: 1440px; margin: 0 auto; padding-inline: var(--gutter); }
+.label {
+  font-family: var(--mono); font-weight: 700; font-size: 13px;
+  letter-spacing: .3em; text-transform: uppercase; color: var(--holo);
+}
+.label.dim { color: var(--dim); font-size: 12px; }
+.display {
+  font-family: var(--mono); font-weight: 800; letter-spacing: -.02em;
+  line-height: 1; text-transform: uppercase; color: var(--text);
+}
+.holo { color: var(--holo); }
+.amber-bar { width: 72px; height: 8px; background: var(--amber); transform: skewX(-30deg); margin-left: 4px; }
+.cham-28 { --c: 28px; }
+.cham { clip-path: polygon(var(--c, 16px) 0, 100% 0, 100% calc(100% - var(--c, 16px)), calc(100% - var(--c, 16px)) 100%, 0 100%, 0 var(--c, 16px)); }
+
+/* ---------- logo ---------- */
+.logo { flex-shrink: 0; display: block; }
+.wordmark { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.wordmark span {
+  font-family: var(--mono); font-weight: 800; font-size: 19px;
+  letter-spacing: .18em; color: var(--text); white-space: nowrap;
+}
+.wordmark b { font-weight: 800; color: var(--holo); }
+
+/* ---------- buttons ---------- */
+.btn-glow { display: flex; filter: drop-shadow(0 0 22px rgba(95,212,244,.35)); transition: filter .3s var(--ease); }
+.btn-glow:hover { filter: drop-shadow(0 0 30px rgba(95,212,244,.6)); }
+.btn-play {
+  --c: 16px;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 14px;
+  height: 64px; padding: 0 32px;
+  background: var(--holo); color: var(--space); text-decoration: none;
+  font-family: var(--mono); font-weight: 800; font-size: 17px; letter-spacing: .14em;
+  transition: transform .25s var(--ease);
+}
+.btn-play:hover { color: var(--space); transform: translateY(-2px); }
+.btn-play::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%);
+  transform: translateX(-120%);
+}
+.btn-play:hover::after { transform: translateX(120%); transition: transform .7s var(--ease); }
+html[data-play="soon"] .if-play-live, html:not([data-play="soon"]) .if-play-soon,
+html[data-apk="soon"] .if-apk-live, html:not([data-apk="soon"]) .if-apk-soon { display: none !important; }
+.btn-play.soon { cursor: default; }
+.btn-play.soon:hover { transform: none; }
+.btn-play.soon::after { display: none; }
+.btn-play.soon .pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--space); animation: blink 2.4s ease-in-out infinite; }
+.btn-glow.soon:hover { filter: drop-shadow(0 0 22px rgba(95,212,244,.35)); }
+.footer-links .soon-link {
+  display: inline-flex; align-items: center; gap: 8px; padding: 14px 0;
+  font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .2em; color: var(--dim);
+}
+.footer-links .soon-link em { font-style: normal; color: var(--amber); }
+.btn-play .stack { display: flex; flex-direction: column; line-height: 1.15; }
+.btn-play small { font-size: 11px; font-weight: 600; letter-spacing: .24em; }
+.btn-play.sm { --c: 12px; height: 48px; padding: 0 22px; font-size: 14px; }
+.btn-ghost {
+  display: flex; align-items: center; gap: 12px;
+  height: 64px; padding: 0 28px;
+  border: 1px solid var(--seam-b); color: var(--text); text-decoration: none;
+  font-family: var(--mono); font-weight: 700; font-size: 15px; letter-spacing: .18em;
+  transition: border-color .25s, background .25s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--holo); background: rgba(95,212,244,.06); }
+.btn-ghost svg { transition: transform .3s var(--ease); }
+.btn-ghost:hover svg { transform: translateY(3px); }
+
+/* ---------- chips ---------- */
+.chip { --c: 8px; display: inline-flex; padding: 1px; background: var(--chip); }
+.chip > span {
+  --c: 8px;
+  display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 16px;
+  background: var(--chip-deep); color: var(--chip);
+  font-family: var(--mono); font-weight: 700; font-size: 14px; letter-spacing: .2em;
+}
+.chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--chip); box-shadow: 0 0 10px var(--chip); animation: blink 2.4s ease-in-out infinite; }
+.chip.green { --chip: var(--green); --chip-deep: var(--green-deep); }
+.chip.red { --chip: var(--red); --chip-deep: var(--red-deep); }
+
+/* ---------- panels ---------- */
+.panel { position: relative; padding: 1px; background: var(--seam); }
+.panel > .panel-body { background: var(--hull); height: 100%; }
+.panel > svg { position: absolute; pointer-events: none; }
+.panel > .corner-tl { top: 0; left: 0; }
+.panel > .corner-br { bottom: 0; right: 0; }
+.corner-tl path { stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset 1.1s var(--ease) .15s; }
+.in-view .corner-tl path, .corner-tl.static path { stroke-dashoffset: 0; }
+
+/* ---------- phone ---------- */
+.phone {
+  --w: 320px;
+  position: relative; width: var(--w);
+  padding: calc(var(--w) * .032);
+  background: #0C1219; border: 1px solid var(--seam-b);
+  border-radius: calc(var(--w) * .1 + 10px);
+  box-shadow: 0 50px 90px rgba(0,0,0,.65), inset 0 0 0 2px #05080C;
+}
+.phone img {
+  display: block; width: 100%; height: auto; aspect-ratio: 9 / 16; object-fit: cover;
+  border-radius: calc(var(--w) * .1);
+}
+.phone::before {
+  content: ""; position: absolute; left: 50%; top: calc(var(--w) * .058);
+  width: calc(var(--w) * .04); aspect-ratio: 1; transform: translateX(-50%);
+  border-radius: 50%; background: #000; box-shadow: inset 0 0 0 2px #1A2430;
+}
+.phone::after, .phone .vol {
+  content: ""; position: absolute; right: -4px; width: 3px;
+  background: var(--seam-b); border-radius: 0 3px 3px 0;
+}
+.phone::after { top: calc(var(--w) * .42); height: calc(var(--w) * .2); }
+.phone .vol { top: calc(var(--w) * .7); height: calc(var(--w) * .32); }
+.phone.dim img { filter: brightness(.62) saturate(.9); }
+.phone .shine {
+  position: absolute; inset: calc(var(--w) * .032); border-radius: calc(var(--w) * .1);
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.07) 50%, transparent 60%);
+  background-size: 250% 100%; background-position: 120% 0;
+  animation: shine 9s ease-in-out infinite; pointer-events: none;
+}
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 20;
+  border-bottom: 1px solid var(--seam);
+  background: rgba(4,6,10,.7);
+  backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
+  transition: background .3s, backdrop-filter .3s;
+}
+.nav.scrolled { background: rgba(4,6,10,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.nav .wrap { height: 96px; display: flex; align-items: center; justify-content: space-between; gap: 24px; transition: height .3s var(--ease); }
+.nav.scrolled .wrap { height: 76px; }
+.nav-links { display: flex; align-items: center; gap: 40px; }
+.nav-links a:not(.btn-play) {
+  position: relative; padding: 14px 0;
+  font-family: var(--mono); font-weight: 600; font-size: 13px; letter-spacing: .24em;
+  color: var(--dim); text-decoration: none; transition: color .2s;
+}
+.nav-links a:not(.btn-play)::after {
+  content: ""; position: absolute; left: 0; right: .24em; bottom: 8px; height: 1px;
+  background: var(--holo); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease);
+}
+.nav-links a:not(.btn-play):hover { color: var(--text); }
+.nav-links a:not(.btn-play):hover::after { transform: scaleX(1); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; }
+.hero .wrap {
+  display: grid; grid-template-columns: 620px minmax(0, 1fr); gap: 20px;
+  min-height: 800px; padding-top: 64px;
+}
+.hero-copy { display: flex; flex-direction: column; gap: 32px; padding-top: 36px; }
+.eyebrow { display: flex; align-items: center; gap: 12px; }
+.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); animation: blink 2.4s ease-in-out infinite; }
+.hero h1 { font-size: 88px; line-height: .98; }
+.hero h1 .holo { text-shadow: 0 0 36px rgba(95,212,244,.45); animation: glow 4s ease-in-out infinite; }
+.hero p { max-width: 540px; font-size: 20px; line-height: 1.6; color: var(--dim); }
+.hero-ctas { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+.hero-phones {
+  position: relative; container-type: inline-size;
+  width: 100%; max-width: 560px; aspect-ratio: 560 / 720; justify-self: center;
+}
+.hero-phones .halo {
+  position: absolute; left: 50%; top: 45.8%; width: 135.7cqw; aspect-ratio: 1;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle, rgba(95,212,244,.22) 0%, rgba(95,212,244,.06) 40%, rgba(95,212,244,0) 68%);
+  animation: breathe 7s ease-in-out infinite;
+}
+.hero-phones .slot { position: absolute; }
+.hero-phones .slot.left { left: 0; top: 26.8cqw; --r: -9deg; }
+.hero-phones .slot.right { left: 66cqw; top: 26.8cqw; --r: 9deg; }
+.hero-phones .slot.front { left: 26.8cqw; top: 3.6cqw; --r: 0deg; z-index: 2; }
+.hero-phones .slot.left .phone, .hero-phones .slot.right .phone { --w: 44.6cqw; }
+.hero-phones .slot.front .phone { --w: 57.1cqw; }
+.hero-phones .slot > div { transform: rotate(var(--r)); }
+.hero-phones .slot.front > div { animation: float 7s ease-in-out infinite; }
+.hero-phones .slot.left > div { animation: float-r 8s ease-in-out -2s infinite; }
+.hero-phones .slot.right > div { animation: float-r 9s ease-in-out -4s infinite; }
+
+.scanline {
+  position: absolute; left: 0; right: 0; top: 0; height: 120px; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(95,212,244,.05) 70%, rgba(95,212,244,.14) 100%);
+  border-bottom: 1px solid rgba(95,212,244,.18);
+  animation: scan 9s linear infinite; opacity: .7;
+}
+
+/* ---------- factions ---------- */
+.factions { border-block: 1px solid var(--seam); background: rgba(10,15,22,.8); }
+.factions .wrap { min-height: 150px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding-block: 28px; }
+.factions .intro { display: flex; flex-direction: column; gap: 8px; }
+.faction { display: flex; align-items: center; gap: 16px; }
+.faction .badge { --c: 12px; display: flex; padding: 2px; background: var(--f); transition: filter .3s; }
+.faction .badge span {
+  --c: 11px;
+  width: 76px; height: 50px; display: flex; align-items: center; justify-content: center;
+  background: var(--fd); color: var(--f);
+  font-family: var(--mono); font-weight: 800; font-size: 17px; letter-spacing: .12em;
+}
+.faction:hover .badge { filter: drop-shadow(0 0 12px var(--f)); }
+.faction .name { font-weight: 600; font-size: 17px; line-height: 1.25; }
+
+/* ---------- features ---------- */
+.features { padding-block: 140px 60px; }
+.features-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; padding-bottom: 24px; }
+.features-head > div { display: flex; flex-direction: column; gap: 24px; }
+.features-head h2 { font-size: 72px; }
+.features-head p { max-width: 400px; font-size: 19px; line-height: 1.6; color: var(--dim); }
+
+.feature {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 80px;
+  align-items: center; min-height: 720px;
+}
+.feature.flip .media { order: 2; }
+.media { position: relative; height: 640px; display: flex; align-items: center; justify-content: center; }
+.media .glow {
+  position: absolute; left: 50%; top: 50%; width: 560px; height: 560px; transform: translate(-50%, -50%);
+  border-radius: 50%; background: radial-gradient(circle, rgba(var(--g), .2) 0%, rgba(var(--g), 0) 65%);
+  animation: breathe 8s ease-in-out infinite;
+}
+.media .num {
+  position: absolute; top: 10px; right: 0;
+  font-family: var(--mono); font-weight: 800; font-size: 220px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 1.5px var(--seam-b); opacity: .8;
+  translate: 0 var(--py, 0px);
+}
+.feature.flip .num { right: auto; left: 0; }
+.media .phone { --w: 330px; }
+.copy { display: flex; flex-direction: column; gap: 28px; }
+.copy .tag { display: flex; align-items: center; gap: 16px; }
+.copy .tag .line { width: 120px; height: 1px; background: linear-gradient(90deg, var(--a), transparent); transform-origin: left; }
+.copy .tag .label { color: var(--a); }
+.copy h3 { font-size: 60px; line-height: 1.02; letter-spacing: -.01em; }
+.copy h3.wide { width: 620px; }
+.copy p { max-width: 500px; font-size: 20px; line-height: 1.6; color: var(--dim); }
+.bullets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bullets li { display: flex; align-items: flex-start; gap: 16px; font-size: 19px; line-height: 1.5; }
+.bullets li::before {
+  content: ""; flex-shrink: 0; width: 10px; height: 10px; margin-top: 9px; background: var(--a);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+}
+.hud { padding-top: 8px; }
+
+/* points HUD */
+.points .panel-body { padding: 24px 28px; }
+.points-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.points-val { font-family: var(--mono); font-weight: 800; font-size: 34px; color: var(--amber); font-variant-numeric: tabular-nums; }
+.points-val small { font-size: 18px; color: var(--dim); letter-spacing: .2em; }
+.segs { display: flex; gap: 4px; padding: 0 4px; }
+.segs i { flex-grow: 1; height: 10px; background: var(--seam); transform: skewX(-24deg); }
+.segs i.on { background: var(--amber); opacity: calc(.55 + var(--k) * .45); }
+
+/* slots HUD */
+.slots { max-width: 420px; }
+.slots .panel-body { padding: 22px 28px 10px; }
+.slots-head { display: flex; justify-content: space-between; padding-bottom: 12px; }
+.slots-head .label { color: var(--text); }
+.slots-head b { font-family: var(--mono); font-size: 14px; color: var(--dim); }
+.slot-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--seam); }
+.slot-row > div { display: flex; flex-direction: column; gap: 4px; }
+.slot-row .label { font-size: 11px; color: var(--dim); }
+.slot-row span { font-size: 18px; }
+.slot-row b { font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--amber); }
+
+/* validation HUD */
+.validation { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+
+/* pips HUD */
+.pips { display: flex; gap: 12px; max-width: 460px; }
+.pip { --c: 10px; flex: 1; display: flex; padding: 1px; background: var(--green); }
+.pip > div {
+  --c: 10px;
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 16px 0 14px; background: var(--hull);
+}
+.pip .dots { display: flex; gap: 5px; }
+.pip .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); }
+.pip b { font-family: var(--mono); font-weight: 800; font-size: 20px; color: var(--green); }
+
+/* ---------- privacy ---------- */
+.privacy { padding-block: 60px 40px; }
+.privacy .panel { --c: 36px; }
+.privacy .panel-body {
+  --c: 36px;
+  background: #08110F; padding: 72px 80px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px; align-items: center;
+}
+.privacy .panel-body > div { display: flex; flex-direction: column; gap: 24px; }
+.privacy .panel-body > div + div { gap: 28px; }
+.privacy h2 { font-size: 68px; line-height: 1.02; }
+.privacy h2 span { color: var(--green); }
+.privacy p { font-size: 22px; line-height: 1.6; }
+.privacy .chips { display: flex; gap: 12px; flex-wrap: wrap; }
+.shield { filter: drop-shadow(0 0 14px rgba(79,217,154,.5)); }
+.shield .check { stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset .8s var(--ease) .5s; }
+.in-view .shield .check { stroke-dashoffset: 0; }
+
+/* ---------- cta ---------- */
+.cta { position: relative; text-align: center; padding-block: 120px; }
+.cta .wrap { position: relative; display: flex; flex-direction: column; align-items: center; gap: 36px; }
+.cta .halo {
+  position: absolute; left: 50%; top: 50%; width: 900px; max-width: 100vw; height: 600px; transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(95,212,244,.16) 0%, rgba(95,212,244,0) 65%);
+  animation: breathe 7s ease-in-out infinite;
+}
+.cta .logo { filter: drop-shadow(0 0 22px rgba(95,212,244,.55)); animation: glow-logo 4s ease-in-out infinite; }
+.cta h2 { font-size: 84px; }
+
+/* ---------- footer ---------- */
+footer { border-top: 1px solid var(--seam); background: var(--hull); }
+footer .wrap { padding-block: 48px 56px; display: flex; flex-direction: column; gap: 28px; }
+.footer-top { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.footer-top .wordmark span { font-size: 15px; }
+.footer-links { display: flex; gap: 36px; flex-wrap: wrap; }
+.footer-links a {
+  padding: 14px 0; font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: .2em;
+  color: var(--dim); text-decoration: none; transition: color .2s;
+}
+.footer-links a:hover { color: var(--holo); }
+.footer-links a.apk { display: inline-flex; align-items: center; gap: 8px; color: var(--holo); }
+.footer-links a.apk:hover { color: #9BE6FA; }
+.apk-note { font-size: 15px; color: var(--dim); }
+.apk-note a { text-underline-offset: 4px; }
+footer p { max-width: 920px; font-size: 14px; line-height: 1.7; color: var(--dim); }
+footer .label { font-size: 11px; }
+
+/* ---------- motion ---------- */
+@keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+@keyframes float-r { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes breathe { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes glow { 0%, 100% { text-shadow: 0 0 28px rgba(95,212,244,.35); } 50% { text-shadow: 0 0 44px rgba(95,212,244,.6); } }
+@keyframes glow-logo { 0%, 100% { filter: drop-shadow(0 0 16px rgba(95,212,244,.4)); } 50% { filter: drop-shadow(0 0 30px rgba(95,212,244,.75)); } }
+@keyframes shine { 0%, 70% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
+@keyframes scan { from { transform: translateY(-120px); } to { transform: translateY(900px); } }
+@keyframes seg-in { from { transform: skewX(-24deg) scaleY(0); } to { transform: skewX(-24deg) scaleY(1); } }
+
+/* entrance: hero loads in on page load, the rest reveals on scroll (only when JS is on) */
+.js .rise { opacity: 0; transform: translateY(24px); transition: opacity .9s var(--ease), transform .9s var(--ease); transition-delay: calc(var(--d, 0) * 90ms); }
+.js .rise.in-view, .js .in-view .rise { opacity: 1; transform: none; }
+.js .hero-phones .slot { opacity: 0; transform: translateY(60px); transition: opacity 1.1s var(--ease), transform 1.1s var(--ease); transition-delay: calc(var(--d, 0) * 120ms + 200ms); }
+.js .hero-phones.in-view .slot { opacity: 1; transform: none; }
+.js .feature .media .phone-wrap { opacity: 0; transform: translateY(50px) rotate(var(--tilt, -3deg)); transition: opacity 1s var(--ease), transform 1.2s var(--ease); }
+.js .feature.in-view .media .phone-wrap { opacity: 1; transform: none; }
+.js .feature .tag .line { transform: scaleX(0); transition: transform .9s var(--ease) .3s; }
+.js .feature.in-view .tag .line { transform: scaleX(1); }
+.js .segs i.on { transform: skewX(-24deg) scaleY(0); }
+.js .in-view .segs i.on { animation: seg-in .35s var(--ease) forwards; animation-delay: calc(var(--i) * 70ms + 400ms); }
+.js .pip { opacity: 0; transform: translateY(10px); transition: opacity .5s, transform .5s var(--ease); transition-delay: calc(var(--i) * 110ms + 400ms); }
+.js .in-view .pip { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .js .rise, .js .hero-phones .slot, .js .feature .media .phone-wrap, .js .pip { opacity: 1 !important; transform: none !important; }
+  .js .segs i.on { transform: skewX(-24deg) !important; }
+  .js .feature .tag .line { transform: none !important; }
+  .corner-tl path, .shield .check { stroke-dashoffset: 0 !important; }
+  .scanline { display: none; }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1240px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .hero h1 { font-size: clamp(56px, 6.6vw, 88px); }
+  .factions .wrap { flex-wrap: wrap; justify-content: flex-start; column-gap: 40px; row-gap: 24px; }
+  .factions .intro { flex-basis: 100%; }
+  .feature { gap: 48px; }
+  .copy h3 { font-size: clamp(40px, 4.6vw, 60px); }
+  .copy h3.wide { width: auto; }
+}
+@media (max-width: 960px) {
+  .nav-links a:not(.btn-play) { display: none; }
+  .hero .wrap { grid-template-columns: 1fr; min-height: 0; padding-top: 40px; gap: 32px; }
+  .hero-copy { padding-top: 0; }
+  .hero-phones { max-width: 480px; margin-bottom: 40px; }
+  .features { padding-block: 96px 40px; }
+  .features-head { flex-direction: column; align-items: flex-start; }
+  .features-head h2 { font-size: clamp(44px, 8vw, 72px); }
+  .feature { grid-template-columns: 1fr; min-height: 0; gap: 16px; padding-block: 56px; }
+  .feature.flip .media { order: 0; }
+  .media { height: auto; padding-block: 24px; }
+  .media .num { font-size: 160px; }
+  .media .glow { width: 420px; height: 420px; }
+  .privacy .panel-body { grid-template-columns: 1fr; gap: 40px; padding: 56px 40px; }
+  .privacy h2 { font-size: clamp(40px, 8vw, 68px); }
+  .cta { padding-block: 96px; }
+  .cta h2 { font-size: clamp(40px, 9vw, 84px); }
+}
+@media (max-width: 560px) {
+  .nav .wrap { height: 72px; }
+  .nav.scrolled .wrap { height: 64px; }
+  .wordmark span { font-size: 15px; letter-spacing: .14em; }
+  .wordmark .logo { width: 30px; height: 30px; }
+  .nav .btn-glow { display: none; }
+  .hero h1 { font-size: clamp(40px, 12.4vw, 56px); }
+  .hero p { font-size: 18px; }
+  .hero-ctas > * { width: 100%; }
+  .hero-ctas .btn-play, .hero-ctas .btn-ghost { width: 100%; justify-content: center; }
+  .label { letter-spacing: .22em; font-size: 12px; }
+  .faction .badge span { width: 64px; height: 44px; font-size: 15px; }
+  .media .phone { --w: min(300px, 78vw); }
+  .media .num { font-size: 120px; }
+  .copy p, .bullets li { font-size: 17px; }
+  .points .panel-body { padding: 20px; }
+  .points-val { font-size: 28px; }
+  .pips { gap: 8px; }
+  .privacy .panel-body { padding: 48px 24px; }
+  .privacy p { font-size: 19px; }
+  .cta .logo { width: 88px; height: 88px; }
+}
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js'); document.body.classList.add('js');</script>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo" viewBox="0 0 100 100">
+      <path d="M24 8H92V76L76 92H8V24Z" fill="none" stroke="#5FD4F4" stroke-width="7"/>
+      <path d="M28 40 50 27 72 40V50L50 37 28 50Z" fill="#5FD4F4"/>
+      <path d="M28 56 50 43 72 56V66L50 53 28 66Z" fill="#5FD4F4"/>
+      <path d="M30 71H74L71 79H27Z" fill="#FFB84D"/>
+    </symbol>
+    <symbol id="play" viewBox="0 0 24 24">
+      <path d="M6 3.5v17l14-8.5z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="nav" id="top">
+  <div class="wrap">
+    <a class="wordmark" href="#top" aria-label="Legion Builder home">
+      <svg class="logo" width="38" height="38" aria-hidden="true"><use href="#logo"/></svg>
+      <span>LEGION <b>BUILDER</b></span>
+    </a>
+    <nav class="nav-links" aria-label="Main">
+      <a href="#features">FEATURES</a>
+      <a href="#factions">FACTIONS</a>
+      <a href="#privacy">PRIVACY</a>
+      <div class="btn-glow if-play-live">
+        <a class="btn-play sm cham" href="https://play.google.com/store/apps/details?id=tech.kjablonski.legionbuilder">
+          <svg width="20" height="20" aria-hidden="true"><use href="#play"/></svg>
+          <span>GET THE APP</span>
+        </a>
+      </div>
+      <div class="btn-glow soon if-play-soon">
+        <span class="btn-play sm soon cham"><i class="pulse" aria-hidden="true"></i><span>COMING SOON</span></span>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="scanline" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <div class="eyebrow rise" style="--d: 0"><i></i><span class="label">Offline army builder · for Android</span></div>
+        <h1 class="display rise" style="--d: 1">Build<br>legal lists.<br><span class="holo">Anywhere.</span></h1>
+        <div class="amber-bar rise" style="--d: 2"></div>
+        <p class="rise" style="--d: 3">An offline army list builder for Star Wars™: Legion. Units, upgrades, Command Hands and Battle Forces, checked against the rules as you build, at the club, at a tournament or with no signal at all.</p>
+        <div class="hero-ctas rise" style="--d: 4">
+          <div class="btn-glow if-play-live">
+            <a class="btn-play cham" href="https://play.google.com/store/apps/details?id=tech.kjablonski.legionbuilder">
+              <svg width="22" height="22" aria-hidden="true"><use href="#play"/></svg>
+              <span class="stack"><small>GET IT ON</small>GOOGLE PLAY</span>
+            </a>
+          </div>
+          <div class="btn-glow soon if-play-soon">
+            <span class="btn-play soon cham">
+              <i class="pulse" aria-hidden="true"></i>
+              <span class="stack"><small>GOOGLE PLAY</small>COMING SOON</span>
+            </span>
+          </div>
+          <a class="btn-ghost" href="#features">SEE IT IN ACTION
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-phones reveal" aria-label="App screenshots">
+        <div class="halo" aria-hidden="true"></div>
+        <div class="slot left" style="--d: 1"><div class="phone dim"><img src="assets/03-unit-loadout.jpg" alt="Unit detail screen" width="720" height="1280"><span class="vol"></span></div></div>
+        <div class="slot right" style="--d: 2"><div class="phone dim"><img src="assets/04-command-hand.jpg" alt="Command Hand screen" width="720" height="1280"><span class="vol"></span></div></div>
+        <div class="slot front" style="--d: 0"><div class="phone"><img src="assets/01-army-roster.jpg" alt="Army roster screen with two saved armies" width="720" height="1280"><span class="vol"></span><span class="shine"></span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="factions" id="factions" aria-label="Supported factions">
+    <div class="wrap">
+      <div class="intro rise reveal"><span class="label">Every faction</span><span class="label dim">Standard · Recon</span></div>
+      <div class="faction rise reveal" style="--d: 1; --f: #E5484D; --fd: #2A1012"><div class="badge cham"><span class="cham">IMP</span></div><span class="name">Galactic Empire</span></div>
+      <div class="faction rise reveal" style="--d: 2; --f: #F2803A; --fd: #2B190D"><div class="badge cham"><span class="cham">REB</span></div><span class="name">Rebel Alliance</span></div>
+      <div class="faction rise reveal" style="--d: 3; --f: #4F9DF0; --fd: #0F1D2E"><div class="badge cham"><span class="cham">REP</span></div><span class="name">Galactic Republic</span></div>
+      <div class="faction rise reveal" style="--d: 4; --f: #8F86F5; --fd: #1C1A33"><div class="badge cham"><span class="cham">SEP</span></div><span class="name">Separatist Alliance</span></div>
+      <div class="faction rise reveal" style="--d: 5; --f: #D1A75E; --fd: #2A2214"><div class="badge cham"><span class="cham">MERC</span></div><span class="name">Mercenary</span></div>
+    </div>
+  </section>
+
+  <section class="features wrap" id="features">
+    <div class="features-head reveal">
+      <div>
+        <span class="label rise">// 01 · Capabilities</span>
+        <h2 class="display rise" style="--d: 1">A full army<br>in your pocket.</h2>
+      </div>
+      <p class="rise" style="--d: 2">Create, rename, duplicate and delete as many armies as you like. Everything a list needs, from the first unit to the last command card.</p>
+    </div>
+
+    <!-- 02 Army editor -->
+    <article class="feature reveal" style="--a: #FF5C61; --g: 229,72,77">
+      <div class="media">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="num" aria-hidden="true" data-parallax>02</div>
+        <div class="phone-wrap"><div class="phone"><img src="assets/02-army-editor.jpg" alt="Army editor screen showing an Imperial army at 406 of 1000 points" width="720" height="1280" loading="lazy"><span class="vol"></span><span class="shine"></span></div></div>
+      </div>
+      <div class="copy">
+        <div class="tag rise"><span class="label">02 / Army editor</span><span class="line"></span></div>
+        <h3 class="display rise" style="--d: 1">Every unit.<br>Every upgrade.</h3>
+        <p class="rise" style="--d: 2">Build by rank, from Commander to Heavy. The running points total and the rank counts update with every tap.</p>
+        <ul class="bullets rise" style="--d: 3">
+          <li>Add, remove and duplicate units</li>
+          <li>Equip slotted and slotless upgrades</li>
+          <li>Standard (1000 pts) and Recon (600 pts) formats</li>
+        </ul>
+        <div class="hud rise" style="--d: 4">
+          <div class="panel points cham" style="--c: 18px">
+            <div class="panel-body cham" style="--c: 18px">
+              <div class="points-row">
+                <div class="points-val"><span data-count="406">406</span> <small>/ 1000 PTS</small></div>
+                <span class="label dim">594 remaining</span>
+              </div>
+              <div class="segs" aria-hidden="true">
+                <i class="on" style="--i: 0; --k: .125"></i><i class="on" style="--i: 1; --k: .25"></i><i class="on" style="--i: 2; --k: .375"></i><i class="on" style="--i: 3; --k: .5"></i><i class="on" style="--i: 4; --k: .625"></i><i class="on" style="--i: 5; --k: .75"></i><i class="on" style="--i: 6; --k: .875"></i><i class="on" style="--i: 7; --k: 1"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+            </div>
+            <svg class="corner-tl" width="150" height="22" aria-hidden="true"><path d="M1.5 20 L20 1.5 H150" stroke="#FF5C61" stroke-width="3" fill="none"/></svg>
+            <svg class="corner-br" width="22" height="22" aria-hidden="true"><path d="M1.5 20.5 L20.5 1.5" stroke="#FF5C61" stroke-opacity=".6" stroke-width="2" fill="none"/></svg>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 03 Unit detail -->
+    <article class="feature flip reveal" style="--a: #5FD4F4; --g: 95,212,244">
+      <div class="media" style="--tilt: 3deg">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="num" aria-hidden="true" data-parallax>03</div>
+        <div class="phone-wrap"><div class="phone"><img src="assets/03-unit-loadout.jpg" alt="Unit detail screen showing a unit card and its three-upgrade loadout" width="720" height="1280" loading="lazy"><span class="vol"></span><span class="shine"></span></div></div>
+      </div>
+      <div class="copy">
+        <div class="tag rise"><span class="label">03 / Unit detail</span><span class="line"></span></div>
+        <h3 class="display rise" style="--d: 1">The card,<br>right there.</h3>
+        <p class="rise" style="--d: 2">Open any unit, upgrade or command card without leaving your list. Flip it front to back and zoom in on the rules.</p>
+        <ul class="bullets rise" style="--d: 3">
+          <li>Official card art for every unit and upgrade</li>
+          <li>Front/back switching and zoom</li>
+          <li>Swap an upgrade in one tap</li>
+        </ul>
+        <div class="hud rise" style="--d: 4">
+          <div class="slots">
+            <div class="panel cham" style="--c: 18px">
+              <div class="panel-body cham" style="--c: 18px">
+                <div class="slots-head"><span class="label">Loadout</span><b>3/3</b></div>
+                <div class="slot-row"><div><span class="label">Command</span><span>Fire Control</span></div><b>5</b></div>
+                <div class="slot-row"><div><span class="label">Training</span><span>Duck and Cover</span></div><b>2</b></div>
+                <div class="slot-row"><div><span class="label">Gear</span><span>Ascension Cables</span></div><b>4</b></div>
+              </div>
+              <svg class="corner-tl" width="150" height="22" aria-hidden="true"><path d="M1.5 20 L20 1.5 H150" stroke="#FF5C61" stroke-width="3" fill="none"/></svg>
+              <svg class="corner-br" width="22" height="22" aria-hidden="true"><path d="M1.5 20.5 L20.5 1.5" stroke="#FF5C61" stroke-opacity=".6" stroke-width="2" fill="none"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 04 Live validation -->
+    <article class="feature reveal" style="--a: #FFB84D; --g: 255,184,77">
+      <div class="media">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="num" aria-hidden="true" data-parallax>04</div>
+        <div class="phone-wrap"><div class="phone"><img src="assets/05-live-validation.jpg" alt="Validation panel listing Command Hand rule errors" width="720" height="1280" loading="lazy"><span class="vol"></span><span class="shine"></span></div></div>
+      </div>
+      <div class="copy">
+        <div class="tag rise"><span class="label">04 / Live validation</span><span class="line"></span></div>
+        <h3 class="display rise wide" style="--d: 1">Find out now.<br>Not at the event.</h3>
+        <p class="rise" style="--d: 2">Every change is checked right away. Problems show up the moment you make them, each with a plain-language reason.</p>
+        <ul class="bullets rise" style="--d: 3">
+          <li>Points and rank limits</li>
+          <li>Unique and limited cards, detachments</li>
+          <li>Upgrade slots and requirements</li>
+          <li>Command Hand and Battle Force rosters</li>
+        </ul>
+        <div class="hud validation rise" style="--d: 4">
+          <span class="chip green cham"><span class="cham"><i></i>LEGAL</span></span>
+          <span class="chip red cham"><span class="cham"><i></i>ILLEGAL</span></span>
+          <span class="label dim">Checked on every change</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- 05 Command hand -->
+    <article class="feature flip reveal" style="--a: #4FD99A; --g: 79,217,154">
+      <div class="media" style="--tilt: 3deg">
+        <div class="glow" aria-hidden="true"></div>
+        <div class="num" aria-hidden="true" data-parallax>05</div>
+        <div class="phone-wrap"><div class="phone"><img src="assets/04-command-hand.jpg" alt="Command Hand screen showing seven selected cards and pip counts" width="720" height="1280" loading="lazy"><span class="vol"></span><span class="shine"></span></div></div>
+      </div>
+      <div class="copy">
+        <div class="tag rise"><span class="label">05 / Command hand</span><span class="line"></span></div>
+        <h3 class="display rise" style="--d: 1">Seven cards.<br>Sorted.</h3>
+        <p class="rise" style="--d: 2">Pick your Command Hand with the pip counts shown as you go, then sort it by pips or by name.</p>
+        <ul class="bullets rise" style="--d: 3">
+          <li>Pip requirements tracked live</li>
+          <li>Sort by pips or name</li>
+          <li>Full card art for every command card</li>
+        </ul>
+        <div class="hud rise" style="--d: 4">
+          <div class="pips" aria-label="Pip counts: 2 of 2 one-pip, 2 of 2 two-pip, 2 of 2 three-pip, 1 of 1 four-pip">
+            <div class="pip cham" style="--i: 0"><div class="cham"><span class="dots"><i></i></span><b>2/2</b></div></div>
+            <div class="pip cham" style="--i: 1"><div class="cham"><span class="dots"><i></i><i></i></span><b>2/2</b></div></div>
+            <div class="pip cham" style="--i: 2"><div class="cham"><span class="dots"><i></i><i></i><i></i></span><b>2/2</b></div></div>
+            <div class="pip cham" style="--i: 3"><div class="cham"><span class="dots"><i></i><i></i><i></i><i></i></span><b>1/1</b></div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="privacy wrap" id="privacy">
+    <div class="panel cham reveal">
+      <div class="panel-body cham">
+        <div>
+          <span class="label rise" style="color: var(--green)">// 06 · Private and offline</span>
+          <h2 class="display rise" style="--d: 1">No account.<br>No ads.<br><span>No tracking.</span></h2>
+        </div>
+        <div>
+          <svg class="shield rise" style="--d: 2" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#4FD99A" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2.5 4 5.5v6c0 5 3.4 8.8 8 10 4.6-1.2 8-5 8-10v-6z"/>
+            <path class="check" d="m8.5 12 2.5 2.5 4.5-5"/>
+          </svg>
+          <p class="rise" style="--d: 3">Your armies stay on your device, and the app never needs an internet connection. Nothing to sign up for, nothing collected, nothing shared.</p>
+          <div class="chips rise" style="--d: 4">
+            <span class="chip green cham"><span class="cham"><i></i>WORKS OFFLINE</span></span>
+            <span class="chip green cham"><span class="cham"><i></i>NO DATA COLLECTED</span></span>
+            <span class="chip green cham"><span class="cham"><i></i>FREE</span></span>
+          </div>
+        </div>
+      </div>
+      <svg class="corner-tl" width="150" height="40" aria-hidden="true"><path d="M1.5 38 L38 1.5 H150" stroke="#4FD99A" stroke-width="3" fill="none"/></svg>
+      <svg class="corner-br" width="40" height="40" aria-hidden="true"><path d="M1.5 38.5 L38.5 1.5" stroke="#4FD99A" stroke-opacity=".6" stroke-width="2" fill="none"/></svg>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="halo" aria-hidden="true"></div>
+    <div class="wrap reveal">
+      <svg class="logo rise" width="112" height="112" aria-hidden="true"><use href="#logo"/></svg>
+      <h2 class="display rise" style="--d: 1">Your next list<br><span class="holo">starts here.</span></h2>
+      <div class="amber-bar rise" style="--d: 2"></div>
+      <div class="btn-glow rise if-play-live" style="--d: 3">
+        <a class="btn-play cham" href="https://play.google.com/store/apps/details?id=tech.kjablonski.legionbuilder">
+          <svg width="22" height="22" aria-hidden="true"><use href="#play"/></svg>
+          <span class="stack"><small>GET IT ON</small>GOOGLE PLAY</span>
+        </a>
+      </div>
+      <div class="btn-glow soon rise if-play-soon" style="--d: 3">
+        <span class="btn-play soon cham">
+          <i class="pulse" aria-hidden="true"></i>
+          <span class="stack"><small>GOOGLE PLAY</small>COMING SOON</span>
+        </span>
+      </div>
+      <span class="label dim rise" style="--d: 4">Free · Android · Works offline</span>
+      <p class="apk-note rise if-apk-live" style="--d: 5">No Play Store? <a href="downloads/legion-builder.apk" download>Download the APK directly</a></p>
+      <p class="apk-note rise if-apk-soon" style="--d: 5">A direct APK download is coming soon too.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <a class="wordmark" href="#top" aria-label="Back to top">
+        <svg class="logo" width="30" height="30" aria-hidden="true"><use href="#logo"/></svg>
+        <span>LEGION <b>BUILDER</b></span>
+      </a>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="privacy-policy/">PRIVACY POLICY</a>
+        <a href="mailto:swlarmybuilder@gmail.com">CONTACT</a>
+        <a class="if-play-live" href="https://play.google.com/store/apps/details?id=tech.kjablonski.legionbuilder">GOOGLE PLAY</a>
+        <span class="soon-link if-play-soon">GOOGLE PLAY <em>· SOON</em></span>
+        <a class="apk if-apk-live" href="downloads/legion-builder.apk" download>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+          DOWNLOAD APK
+        </a>
+        <span class="soon-link if-apk-soon">APK <em>· SOON</em></span>
+      </nav>
+    </div>
+    <p>Legion Builder is an unofficial, fan-made tool. It is not produced, endorsed, or supported by, or affiliated with, Lucasfilm Ltd., Disney, or Atomic Mass Games. Star Wars and related names are trademarks of Lucasfilm Ltd.</p>
+    <span class="label dim">© 2026 Legion Builder · v1.0.0</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Reveal sections as they scroll into view; the hero reveals on load.
+  var targets = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+    targets.forEach(function (t) { io.observe(t); });
+  } else {
+    targets.forEach(function (t) { t.classList.add('in-view'); });
+  }
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.hero .rise, .hero-phones').forEach(function (el) { el.classList.add('in-view'); });
+  });
+
+  // Count the points total up when it appears.
+  if (!reduce) {
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      var end = +el.dataset.count, started = false;
+      el.textContent = '0';
+      var obs = new IntersectionObserver(function (entries) {
+        if (!entries[0].isIntersecting || started) return;
+        started = true; obs.disconnect();
+        var t0 = performance.now(), dur = 1200;
+        (function tick(now) {
+          var p = Math.min(1, (now - t0 - 400) / dur);
+          if (p < 0) { requestAnimationFrame(tick); return; }
+          el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
+          if (p < 1) requestAnimationFrame(tick);
+        })(t0);
+      }, { threshold: 0.6 });
+      obs.observe(el);
+    });
+  }
+
+  // Compact the nav once the page scrolls; drift the outlined numbers slightly.
+  var nav = document.querySelector('.nav');
+  var nums = document.querySelectorAll('[data-parallax]');
+  var ticking = false;
+  function onScroll() {
+    nav.classList.toggle('scrolled', window.scrollY > 24);
+    if (!reduce) {
+      var vh = window.innerHeight;
+      nums.forEach(function (n) {
+        var r = n.parentElement.getBoundingClientRect();
+        var off = (r.top + r.height / 2 - vh / 2) / vh;
+        n.style.setProperty('--py', (off * -60).toFixed(1) + 'px');
+      });
+    }
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>
