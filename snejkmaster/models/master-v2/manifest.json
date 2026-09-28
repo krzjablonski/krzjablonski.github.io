@@ -1,0 +1,14 @@
+{
+  "rules_version": "snake-v1",
+  "observation_version": "ordered-grid-v1",
+  "reward_version": "sparse-v1",
+  "model_id": "master-v2",
+  "width": 12,
+  "height": 12,
+  "maxSteps": 500,
+  "input_size": 293,
+  "action_count": 3,
+  "onnx": "model.onnx",
+  "training_steps": 393216,
+  "output_kind": "policy_logits"
+}
