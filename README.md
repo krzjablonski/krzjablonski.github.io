@@ -5,7 +5,7 @@
 [Open the landing page](https://kjablonski.tech/legion-builder/).
 
 `legion-builder/` is the static landing page for the Legion Builder Android
-app. The source lives in the legion_builder_v3 repo under `mobile/website/`;
+app. The source lives in the legion_builder_v3 repo under `website/`;
 copy that folder's contents here to update it.
 
 The app's privacy policy (the URL given to the Play Console) is at
